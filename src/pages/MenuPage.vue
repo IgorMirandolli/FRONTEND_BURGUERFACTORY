@@ -23,23 +23,26 @@
       {{ errorMessage }}
     </q-banner>
 
-    <section v-else id="menu">
-      <h2 class="menu-section-title q-mb-md">MENU INICIAL</h2>
-      <div class="menu-grid">
-        <q-card v-for="item in menuItems" :key="item.id" class="menu-card" flat bordered>
-          <q-card-section>
-            <div class="menu-item-title q-mb-xs">{{ item.name }}</div>
-            <div class="menu-description q-mb-md">{{ item.description }}</div>
-            <div class="menu-price">R$ {{ formatPrice(item.price) }}</div>
-          </q-card-section>
-        </q-card>
-      </div>
+    <section v-else id="menu" class="menu-sections">
+      <article v-for="section in menuSections" :key="section.key" class="menu-section-block q-mb-xl">
+        <h2 class="menu-section-title q-mb-md">{{ section.title }}</h2>
+        <div class="menu-grid">
+          <q-card v-for="item in section.items" :key="item.id" class="menu-card" flat bordered>
+            <q-img :src="item.imageUrl" :alt="item.name" class="menu-item-image" />
+            <q-card-section>
+              <div class="menu-item-title q-mb-xs">{{ item.name }}</div>
+              <div class="menu-description q-mb-md">{{ item.description }}</div>
+              <div class="menu-price">R$ {{ formatPrice(item.price) }}</div>
+            </q-card-section>
+          </q-card>
+        </div>
+      </article>
     </section>
   </q-page>
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
@@ -48,6 +51,20 @@ const router = useRouter()
 const menuItems = ref([])
 const loading = ref(true)
 const errorMessage = ref('')
+
+const sectionOrder = [
+  { key: 'combos', title: 'COMBOS' },
+  { key: 'hamburgueres', title: 'HAMBURGUERES' },
+  { key: 'fritas', title: 'FRITAS' },
+  { key: 'bebidas', title: 'BEBIDAS' },
+]
+
+const menuSections = computed(() => {
+  return sectionOrder.map((section) => ({
+    ...section,
+    items: menuItems.value.filter((item) => item.category === section.key),
+  }))
+})
 
 function formatPrice(value) {
   return Number(value).toFixed(2).replace('.', ',')
