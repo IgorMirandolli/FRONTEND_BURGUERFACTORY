@@ -1,0 +1,163 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Bebas+Neue&display=swap');
+
+:root {
+  --bf-bg: #f3ede2;
+  --bf-paper: #fffdf7;
+  --bf-text: #1f1a17;
+  --bf-accent: #d26a25;
+  --bf-accent-strong: #ba4b14;
+  --bf-border: #e6d5bd;
+}
+
+body {
+  font-family: 'Sora', sans-serif;
+  background:
+    radial-gradient(circle at 8% 0%, rgba(229, 151, 89, 0.38) 0%, rgba(229, 151, 89, 0) 36%),
+    radial-gradient(circle at 100% 100%, rgba(210, 106, 37, 0.24) 0%, rgba(210, 106, 37, 0) 40%),
+    linear-gradient(180deg, #faf2e5 0%, #f2e8d8 100%);
+  color: var(--bf-text);
+}
+
+.brand-title,
+.brand-overline {
+  font-family: 'Bebas Neue', sans-serif;
+  letter-spacing: 0.06em;
+}
+
+.brand-wrap {
+  gap: 10px;
+}
+
+.brand-logo {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.12));
+}
+
+.brand-title {
+  font-size: 2rem;
+}
+
+.toolbar-shell {
+  margin: 12px;
+  border: 1px solid var(--bf-border);
+  border-radius: 16px;
+  background: rgba(255, 253, 247, 0.95);
+  backdrop-filter: blur(8px);
+}
+
+.login-page {
+  position: relative;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.login-glow {
+  position: absolute;
+  width: 520px;
+  height: 520px;
+  background: radial-gradient(circle, rgba(210, 106, 37, 0.28) 0%, rgba(210, 106, 37, 0) 72%);
+  top: -160px;
+  right: -100px;
+  pointer-events: none;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 470px;
+  border-radius: 22px;
+  border: 1px solid var(--bf-border);
+  background: var(--bf-paper);
+  box-shadow: 0 24px 60px rgba(35, 24, 16, 0.12);
+}
+
+.login-logo {
+  width: 78px;
+  height: 78px;
+  object-fit: contain;
+}
+
+.login-title {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.login-subtitle {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #6b6157;
+}
+
+.menu-page {
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.hero-title {
+  font-size: 2.3rem;
+  line-height: 1.1;
+  font-weight: 800;
+}
+
+.hero-subtitle {
+  max-width: 520px;
+  font-size: 1.08rem;
+  line-height: 1.65;
+  color: #5f554c;
+}
+
+.session-badge {
+  padding: 10px 16px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 18px;
+}
+
+.menu-card {
+  border-radius: 18px;
+  background: var(--bf-paper);
+  border-color: var(--bf-border);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.menu-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 30px rgba(36, 24, 14, 0.1);
+}
+
+.menu-item-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.menu-price {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--bf-accent-strong);
+}
+
+.menu-description {
+  font-size: 0.98rem;
+  line-height: 1.5;
+  color: #6b6157;
+}
+
+.add-btn {
+  border-radius: 10px;
+  padding-inline: 16px;
+}
