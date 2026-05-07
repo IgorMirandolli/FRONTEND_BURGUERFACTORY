@@ -1,6 +1,6 @@
 <template>
   <q-layout view="lHh lpr lFf" class="site-layout">
-    <q-header v-if="!isLoginPage" class="topbar" reveal>
+    <q-header v-if="!isLoginPage" class="topbar">
       <q-toolbar class="topbar-inner">
         <div class="brand-wrap row items-center no-wrap">
           <img :src="logo" alt="Burger Factory" class="brand-logo" />
@@ -8,8 +8,8 @@
         </div>
 
         <nav class="nav-links row items-center no-wrap">
-          <a href="#menu" class="nav-link">Cardapio</a>
-          <a href="#sobre" class="nav-link">Sobre</a>
+          <a href="/lanches#menu" class="nav-link" @click.prevent="goMenu">Cardapio</a>
+          <a href="/lanches#sobre" class="nav-link" @click.prevent="goAbout">Sobre</a>
           <q-btn flat no-caps class="enter-btn" label="Entrar" @click="goLogin" />
         </nav>
       </q-toolbar>
@@ -32,5 +32,13 @@ const isLoginPage = computed(() => route.path === '/login')
 
 function goLogin() {
   router.push('/login')
+}
+
+function goMenu() {
+  router.push('/lanches#menu')
+}
+
+function goAbout() {
+  router.push('/lanches#sobre')
 }
 </script>

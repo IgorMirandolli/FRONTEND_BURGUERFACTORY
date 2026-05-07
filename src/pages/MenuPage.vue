@@ -28,7 +28,7 @@
         <h2 class="menu-section-title q-mb-md">{{ section.title }}</h2>
         <div class="menu-grid">
           <q-card v-for="item in section.items" :key="item.id" class="menu-card" flat bordered>
-            <q-img :src="item.imageUrl" :alt="item.name" class="menu-item-image" />
+            <q-img :src="item.imageUrl" :alt="item.name" class="menu-item-image" loading="lazy" fit="cover" />
             <q-card-section>
               <div class="menu-item-title q-mb-xs">{{ item.name }}</div>
               <div class="menu-description q-mb-md">{{ item.description }}</div>
