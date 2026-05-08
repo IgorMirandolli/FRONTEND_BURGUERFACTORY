@@ -1,6 +1,6 @@
 <template>
   <q-page class="menu-page q-pa-md q-pa-lg-xl">
-    <section class="hero-home q-mb-xl" id="sobre">
+    <section class="hero-home q-mb-xl">
       <div class="hero-content">
         <q-badge class="home-badge" color="amber-6" text-color="dark" label="Hamburgueres Artesanais" />
         <h1 class="home-title q-my-md">O SABOR QUE VOCE MONTA DO SEU JEITO.</h1>
@@ -31,6 +31,34 @@
             class="hero-carousel-slide"
           />
         </q-carousel>
+      </div>
+    </section>
+
+    <section id="sobre" class="about-section q-mb-xl">
+      <div class="about-kicker">Nossa Essencia</div>
+      <h2 class="menu-section-title q-mb-md">SOBRE A BURGER FACTORY</h2>
+      <div class="about-grid">
+        <div class="about-main">
+          <p class="about-text q-mb-md">
+            Na Burger Factory, acreditamos que um hamburguer vai muito alem de apenas matar a fome:
+            ele precisa ser uma experiencia. Trabalhamos com ingredientes selecionados, carnes
+            artesanais, combinacoes marcantes e um preparo pensado em cada detalhe para entregar
+            sabor, qualidade e aquela sensacao de satisfacao a cada pedido.
+          </p>
+          <p class="about-text">
+            Hoje atuamos exclusivamente atraves do delivery, levando nossos burgers ate voce com
+            praticidade, rapidez e o mesmo cuidado de uma hamburgueria premium.
+          </p>
+        </div>
+
+        <aside class="about-side">
+          <p class="about-side-text">
+            Mesmo sendo uma marca em crescimento, nosso objetivo e grande: criar uma experiencia cada
+            vez melhor para nossos clientes e, no futuro, expandir a Burger Factory para um espaco
+            fisico moderno, aconchegante e cheio de personalidade.
+          </p>
+          <p class="about-signature">Burger Factory, feito para satisfazer.</p>
+        </aside>
       </div>
     </section>
 
@@ -145,4 +173,5 @@ onMounted(() => {
   loadMenu()
 })
 </script>
+
 
