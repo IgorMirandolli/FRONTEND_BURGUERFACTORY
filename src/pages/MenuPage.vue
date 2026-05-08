@@ -12,7 +12,26 @@
         </div>
       </div>
 
-      <div class="hero-highlight"></div>
+      <div class="hero-highlight">
+        <q-carousel
+          v-model="heroSlide"
+          animated
+          infinite
+          autoplay="3500"
+          arrows
+          navigation
+          height="100%"
+          class="hero-carousel"
+        >
+          <q-carousel-slide
+            v-for="slide in heroSlides"
+            :key="slide.name"
+            :name="slide.name"
+            :img-src="slide.imageUrl"
+            class="hero-carousel-slide"
+          />
+        </q-carousel>
+      </div>
     </section>
 
     <section v-if="loading" class="q-py-lg">
@@ -51,6 +70,22 @@ const router = useRouter()
 const menuItems = ref([])
 const loading = ref(true)
 const errorMessage = ref('')
+const heroSlide = ref('hamburguer')
+
+const heroSlides = [
+  {
+    name: 'hamburguer',
+    imageUrl: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=1000&q=80',
+  },
+  {
+    name: 'fritas',
+    imageUrl: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=1000&q=80',
+  },
+  {
+    name: 'bebida',
+    imageUrl: 'https://images.unsplash.com/photo-1581636625402-29b2a704ef13?auto=format&fit=crop&w=1000&q=80',
+  },
+]
 
 const sectionOrder = [
   { key: 'combos', title: 'COMBOS' },
@@ -110,3 +145,4 @@ onMounted(() => {
   loadMenu()
 })
 </script>
+
