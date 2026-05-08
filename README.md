@@ -1,5 +1,22 @@
 # 🍔 Burger Factory — Frontend
 
+<p align="center">
+  <img src="./src/assets/logoburguerfactory.png.png" width="260"/>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Quasar-2.x-1976D2?logo=quasar" />
+  <img src="https://img.shields.io/badge/Vue-3.x-42b883?logo=vue.js" />
+  <img src="https://img.shields.io/badge/Node.js-22+-339933?logo=node.js" />
+  <img src="https://img.shields.io/badge/Status-Em%20desenvolvimento-orange" />
+</p>
+
+<p align="center">
+  🇧🇷 Português
+</p>
+
+---
+
 Frontend oficial da **Burger Factory**, desenvolvido com **Quasar Framework + Vue 3**, consumindo a API do backend Node.js/Express.
 
 A aplicação foi criada com foco em performance, organização e experiência moderna para delivery de hamburgueria.
@@ -403,8 +420,14 @@ Este projeto está sob a licença MIT.
 
 ---
 
-# 👨‍💻 Autor
+# 👨‍💻 Desenvolvedores
 
 Desenvolvido por **Igor Mirandolli**
 
-🍔 Burger Factory — *Feito para satisfazer.*
+[![GitHub](https://img.shields.io/badge/IgorMirandolli-181717?style=flat&logo=github)](https://github.com/IgorMirandolli)
+
+---
+
+# 🍔 Burger Factory
+
+> Feito para satisfazer.
