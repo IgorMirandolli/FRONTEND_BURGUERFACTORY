@@ -66,11 +66,14 @@
       <q-spinner color="orange-8" size="40px" />
     </section>
 
-    <q-banner v-else-if="errorMessage" inline-actions class="bg-red-1 text-red-9 q-mb-md rounded-borders">
+    <q-banner v-if="errorMessage" inline-actions class="bg-red-1 text-red-9 q-mb-md rounded-borders">
       {{ errorMessage }}
     </q-banner>
+    <q-banner v-if="cartMessage" inline-actions class="bg-green-1 text-green-9 q-mb-md rounded-borders">
+      {{ cartMessage }}
+    </q-banner>
 
-    <section v-else id="menu" class="menu-sections">
+    <section v-if="!loading && !errorMessage" id="menu" class="menu-sections">
       <article v-for="section in menuSections" :key="section.key" class="menu-section-block q-mb-xl">
         <h2 class="menu-section-title q-mb-md">{{ section.title }}</h2>
         <div class="menu-grid">
@@ -81,6 +84,16 @@
               <div class="menu-description q-mb-md">{{ item.description }}</div>
               <div class="menu-price">R$ {{ formatPrice(item.price) }}</div>
             </q-card-section>
+            <q-card-actions align="right">
+              <q-btn
+                no-caps
+                unelevated
+                color="deep-orange-8"
+                label="Adicionar"
+                :loading="addingItemId === item.id"
+                @click="addToCart(item.id)"
+              />
+            </q-card-actions>
           </q-card>
         </div>
       </article>
@@ -98,7 +111,9 @@ const router = useRouter()
 const menuItems = ref([])
 const loading = ref(true)
 const errorMessage = ref('')
+const cartMessage = ref('')
 const heroSlide = ref('hamburguer')
+const addingItemId = ref(null)
 
 const heroSlides = [
   {
@@ -148,6 +163,66 @@ function continueAsGuest() {
   )
 }
 
+function getOrCreateGuestSessionId() {
+  const existing = localStorage.getItem('bf_guest_session_id');
+  if (existing) {
+    return existing;
+  }
+
+  const generated = crypto.randomUUID();
+  localStorage.setItem('bf_guest_session_id', generated);
+  return generated;
+}
+
+async function addToCart(productId) {
+  cartMessage.value = '';
+  addingItemId.value = productId;
+
+  try {
+    const session = JSON.parse(localStorage.getItem('bf_session') || '{}');
+    const token = session.token || null;
+    const isAuth = session.mode === 'auth' && token;
+    const sessionId = getOrCreateGuestSessionId();
+
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+
+    if (isAuth) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const body = {
+      product_id: productId,
+      quantity: 1,
+    };
+
+    if (!isAuth) {
+      body.session_id = sessionId;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/api/cart/items`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      cartMessage.value = data.message || 'Nao foi possivel adicionar ao carrinho.';
+      return;
+    }
+
+    cartMessage.value = 'Item adicionado ao carrinho com sucesso.';
+    window.dispatchEvent(new Event('bf-cart-updated'));
+  } catch {
+    cartMessage.value = 'Erro de conexao ao adicionar no carrinho.';
+  } finally {
+    addingItemId.value = null;
+  }
+}
+
 async function loadMenu() {
   loading.value = true
   errorMessage.value = ''
@@ -173,5 +248,6 @@ onMounted(() => {
   loadMenu()
 })
 </script>
+
 
 
