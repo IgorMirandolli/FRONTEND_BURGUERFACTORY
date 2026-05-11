@@ -20,13 +20,85 @@
             <q-input v-model="form.address_number" label="Numero" outlined dense />
 
             <q-select
-              v-model="form.payment_method"
-              :options="paymentOptions"
-              label="Forma de pagamento"
+              v-model="form.payment_channel"
+              :options="paymentChannelOptions"
+              label="Pagamento"
               outlined
               dense
               emit-value
               map-options
+            />
+
+            <q-select
+              v-if="form.payment_channel === 'app'"
+              v-model="form.payment_site_method"
+              :options="siteMethodOptions"
+              label="Pagamento via app"
+              outlined
+              dense
+              emit-value
+              map-options
+            />
+
+            <q-select
+              v-if="form.payment_channel === 'delivery'"
+              v-model="form.payment_delivery_method"
+              :options="deliveryMethodOptions"
+              label="Pagamento na entrega"
+              outlined
+              dense
+              emit-value
+              map-options
+            />
+
+            <q-select
+              v-if="form.payment_channel === 'delivery' && form.payment_delivery_method === 'card_delivery'"
+              v-model="form.delivery_card_type"
+              :options="deliveryCardTypeOptions"
+              label="Tipo de cartao na entrega"
+              outlined
+              dense
+              emit-value
+              map-options
+            />
+
+            <div v-if="form.payment_channel === 'app' && form.payment_site_method === 'pix'" class="fake-qr-wrap">
+              <div class="fake-qr">BURGER FACTORY PIX</div>
+              <div class="text-caption text-grey-7 q-mt-sm">QR Code ilustrativo (simulacao)</div>
+            </div>
+
+            <div v-if="form.payment_channel === 'app' && form.payment_site_method === 'card'" class="app-card-form q-gutter-sm">
+              <div class="text-subtitle2 text-weight-bold">Dados do cartao</div>
+              <q-select
+                v-model="form.app_card_type"
+                :options="appCardTypeOptions"
+                label="Tipo de cartao"
+                outlined
+                dense
+                emit-value
+                map-options
+              />
+              <q-input v-model="form.card_name" label="Nome no cartao" outlined dense />
+              <q-input v-model="form.card_number" label="Numero do cartao" outlined dense mask="#### #### #### ####" fill-mask />
+              <div class="row q-col-gutter-sm">
+                <div class="col-6">
+                  <q-input v-model="form.card_expiry" label="Validade" outlined dense mask="##/##" fill-mask />
+                </div>
+                <div class="col-6">
+                  <q-input v-model="form.card_cvv" label="CVV" outlined dense mask="###" fill-mask />
+                </div>
+              </div>
+            </div>
+
+            <q-input
+              v-if="form.payment_channel === 'delivery' && form.payment_delivery_method === 'cash'"
+              v-model="form.cash_change_for"
+              label="Troco para quanto? (opcional)"
+              outlined
+              dense
+              prefix="R$"
+              mask="###.##"
+              fill-mask
             />
 
             <q-input v-model="form.notes" label="Observacoes (opcional)" type="textarea" outlined autogrow />
@@ -107,14 +179,42 @@ const form = ref({
   customer_phone: '',
   delivery_address: '',
   address_number: '',
-  payment_method: 'pix',
+  payment_channel: 'app',
+  payment_site_method: 'pix',
+  payment_delivery_method: 'cash',
+  delivery_card_type: 'credito',
+  app_card_type: 'credito',
+  card_name: '',
+  card_number: '',
+  card_expiry: '',
+  card_cvv: '',
+  cash_change_for: '',
   notes: '',
 })
 
-const paymentOptions = [
+const paymentChannelOptions = [
+  { label: 'Pagar via app', value: 'app' },
+  { label: 'Pagar na entrega', value: 'delivery' },
+]
+
+const siteMethodOptions = [
   { label: 'Pix', value: 'pix' },
-  { label: 'Cartao', value: 'cartao' },
-  { label: 'Dinheiro', value: 'dinheiro' },
+  { label: 'Cartao', value: 'card' },
+]
+
+const deliveryMethodOptions = [
+  { label: 'Dinheiro', value: 'cash' },
+  { label: 'Cartao na entrega', value: 'card_delivery' },
+]
+
+const appCardTypeOptions = [
+  { label: 'Credito', value: 'credito' },
+  { label: 'Debito', value: 'debito' },
+]
+
+const deliveryCardTypeOptions = [
+  { label: 'Credito', value: 'credito' },
+  { label: 'Debito', value: 'debito' },
 ]
 
 function formatPrice(value) {
@@ -185,9 +285,16 @@ async function submitOrder() {
   errorMessage.value = ''
   successMessage.value = ''
 
-  if (!form.value.customer_name || !form.value.delivery_address || !form.value.payment_method) {
+  if (!form.value.customer_name || !form.value.delivery_address || !form.value.payment_channel) {
     errorMessage.value = 'Nome, endereco e forma de pagamento sao obrigatorios.'
     return
+  }
+
+  if (form.value.payment_channel === 'app' && form.value.payment_site_method === 'card') {
+    if (!form.value.card_name || !form.value.card_number || !form.value.card_expiry || !form.value.card_cvv) {
+      errorMessage.value = 'Preencha os dados do cartao.'
+      return
+    }
   }
 
   loadingSubmit.value = true
@@ -200,6 +307,29 @@ async function submitOrder() {
       url += `?session_id=${encodeURIComponent(sessionId)}`
     }
 
+    const paymentMethod =
+      form.value.payment_channel === 'app'
+        ? form.value.payment_site_method === 'pix'
+          ? 'app_pix'
+          : `app_card_${form.value.app_card_type}`
+        : form.value.payment_delivery_method === 'cash'
+          ? 'delivery_cash'
+          : `delivery_card_${form.value.delivery_card_type}`
+
+    const paymentNotes = []
+    if (form.value.payment_channel === 'app' && form.value.payment_site_method === 'pix') {
+      paymentNotes.push('Pagamento via app: Pix (QR fake).')
+    }
+    if (form.value.payment_channel === 'app' && form.value.payment_site_method === 'card') {
+      paymentNotes.push(`Pagamento via app: ${form.value.app_card_type} final ${form.value.card_number.replace(/\s/g, '').slice(-4)}.`)
+    }
+    if (form.value.payment_channel === 'delivery' && form.value.payment_delivery_method === 'card_delivery') {
+      paymentNotes.push(`Pagamento na entrega: cartao ${form.value.delivery_card_type}.`)
+    }
+    if (form.value.payment_channel === 'delivery' && form.value.payment_delivery_method === 'cash' && form.value.cash_change_for) {
+      paymentNotes.push(`Troco para: R$ ${form.value.cash_change_for.replace('.', ',')}.`)
+    }
+
     const response = await fetch(url, {
       method: 'POST',
       headers: {
@@ -208,6 +338,8 @@ async function submitOrder() {
       },
       body: JSON.stringify({
         ...form.value,
+        payment_method: paymentMethod,
+        notes: [form.value.notes, ...paymentNotes].filter(Boolean).join(' | '),
         delivery_address: form.value.address_number
           ? `${form.value.delivery_address}, ${form.value.address_number}`
           : form.value.delivery_address,

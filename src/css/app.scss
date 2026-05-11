@@ -400,6 +400,43 @@ body {
   background: #fffaf2;
 }
 
+.fake-qr-wrap {
+  background: #fff3df;
+  border: 1px dashed #d7b487;
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.fake-qr {
+  width: 180px;
+  height: 180px;
+  border-radius: 8px;
+  border: 8px solid #2a1f18;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      #2a1f18 0px,
+      #2a1f18 8px,
+      #f8f1e4 8px,
+      #f8f1e4 16px
+    );
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #2a1f18;
+  padding-bottom: 8px;
+}
+
+.app-card-form {
+  background: linear-gradient(145deg, #f7f1e8 0%, #eee3d3 100%);
+  border: 1px solid #d2c1ab;
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+}
+
 @media (max-width: 980px) {
   .checkout-wrap {
     grid-template-columns: 1fr;
