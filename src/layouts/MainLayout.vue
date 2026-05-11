@@ -46,10 +46,37 @@
             </q-item-section>
             <q-item-section>
               <q-item-label class="text-weight-medium">{{ item.name }}</q-item-label>
-              <q-item-label caption>Qtd: {{ item.quantity }}</q-item-label>
+              <q-item-label caption class="row items-center no-wrap q-gutter-xs">
+                <q-btn
+                  flat
+                  dense
+                  round
+                  icon="remove"
+                  :disable="Number(item.quantity) <= 1 || updatingItemId === item.id"
+                  @click="updateCartItemQuantity(item, Number(item.quantity) - 1)"
+                />
+                <span>Qtd: {{ item.quantity }}</span>
+                <q-btn
+                  flat
+                  dense
+                  round
+                  icon="add"
+                  :disable="updatingItemId === item.id"
+                  @click="updateCartItemQuantity(item, Number(item.quantity) + 1)"
+                />
+              </q-item-label>
             </q-item-section>
-            <q-item-section side>
+            <q-item-section side class="items-end">
               <q-item-label class="text-weight-bold">R$ {{ formatPrice(item.unit_price * item.quantity) }}</q-item-label>
+              <q-btn
+                flat
+                dense
+                round
+                color="negative"
+                icon="delete"
+                :loading="removingItemId === item.id"
+                @click="removeCartItem(item.id)"
+              />
             </q-item-section>
           </q-item>
         </q-list>
@@ -85,6 +112,8 @@ const cartItems = ref([])
 const cartTotal = ref(0)
 const cartLoading = ref(false)
 const cartError = ref('')
+const removingItemId = ref(null)
+const updatingItemId = ref(null)
 const cartCount = computed(() => cartItems.value.reduce((acc, item) => acc + Number(item.quantity), 0))
 
 function goLogin() {
@@ -112,24 +141,34 @@ function getOrCreateGuestSessionId() {
   return generated
 }
 
-async function loadCart() {
-  cartLoading.value = true
+function getCartRequestContext() {
+  const session = JSON.parse(localStorage.getItem('bf_session') || '{}')
+  const token = session.token || null
+  const isAuth = session.mode === 'auth' && token
+  const sessionId = getOrCreateGuestSessionId()
+
+  const headers = {}
+  let url = `${API_BASE_URL}/api/cart`
+
+  if (isAuth) {
+    headers.Authorization = `Bearer ${token}`
+  } else {
+    url += `?session_id=${encodeURIComponent(sessionId)}`
+  }
+
+  return { headers, url, sessionId, isAuth }
+}
+
+async function loadCart(options = {}) {
+  const { silent = false } = options
+
+  if (!silent) {
+    cartLoading.value = true
+  }
   cartError.value = ''
 
   try {
-    const session = JSON.parse(localStorage.getItem('bf_session') || '{}')
-    const token = session.token || null
-    const isAuth = session.mode === 'auth' && token
-    const sessionId = getOrCreateGuestSessionId()
-
-    const headers = {}
-    let url = `${API_BASE_URL}/api/cart`
-
-    if (isAuth) {
-      headers.Authorization = `Bearer ${token}`
-    } else {
-      url += `?session_id=${encodeURIComponent(sessionId)}`
-    }
+    const { headers, url } = getCartRequestContext()
 
     const response = await fetch(url, { headers })
     const data = await response.json()
@@ -144,7 +183,81 @@ async function loadCart() {
   } catch {
     cartError.value = 'Erro de conexao ao carregar carrinho.'
   } finally {
-    cartLoading.value = false
+    if (!silent) {
+      cartLoading.value = false
+    }
+  }
+}
+
+async function removeCartItem(itemId) {
+  removingItemId.value = itemId
+  cartError.value = ''
+
+  try {
+    const { headers, sessionId, isAuth } = getCartRequestContext()
+    let url = `${API_BASE_URL}/api/cart/items/${itemId}`
+
+    if (!isAuth) {
+      url += `?session_id=${encodeURIComponent(sessionId)}`
+    }
+
+    const response = await fetch(url, {
+      method: 'DELETE',
+      headers,
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      cartError.value = data.message || 'Nao foi possivel remover item.'
+      return
+    }
+
+    await loadCart({ silent: true })
+    window.dispatchEvent(new Event('bf-cart-updated'))
+  } catch {
+    cartError.value = 'Erro de conexao ao remover item.'
+  } finally {
+    removingItemId.value = null
+  }
+}
+
+async function updateCartItemQuantity(item, nextQuantity) {
+  if (nextQuantity < 1) return
+
+  updatingItemId.value = item.id
+  cartError.value = ''
+
+  try {
+    const { headers, sessionId, isAuth } = getCartRequestContext()
+    let url = `${API_BASE_URL}/api/cart/items/${item.id}`
+
+    if (!isAuth) {
+      url += `?session_id=${encodeURIComponent(sessionId)}`
+    }
+
+    const response = await fetch(url, {
+      method: 'PATCH',
+      headers: {
+        ...headers,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ quantity: nextQuantity }),
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      cartError.value = data.message || 'Nao foi possivel atualizar quantidade.'
+      return
+    }
+
+    await loadCart({ silent: true })
+    window.dispatchEvent(new Event('bf-cart-updated'))
+  } catch {
+    cartError.value = 'Erro de conexao ao atualizar quantidade.'
+  } finally {
+    updatingItemId.value = null
   }
 }
 

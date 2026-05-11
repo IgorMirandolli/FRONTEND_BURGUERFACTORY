@@ -91,6 +91,7 @@
                 color="deep-orange-8"
                 icon="add_shopping_cart"
                 label="Adicionar ao carrinho"
+                class="add-cart-btn"
                 :loading="addingItemId === item.id"
                 @click="addToCart(item.id)"
               />
