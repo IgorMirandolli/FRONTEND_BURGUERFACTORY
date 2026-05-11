@@ -16,7 +16,8 @@
         </div>
       </q-card-section>
 
-      <q-card-section>
+      <q-form @submit.prevent="submitAuth">
+        <q-card-section>
         <q-input v-if="isRegisterMode" v-model="name" label="Nome" outlined dense class="q-mb-md" />
         <q-input v-model="email" label="E-mail" outlined dense type="email" class="q-mb-md" />
         <q-input
@@ -48,16 +49,16 @@
         <q-banner v-if="errorMessage" inline-actions class="bg-red-1 text-red-9 q-mt-md rounded-borders">
           {{ errorMessage }}
         </q-banner>
-      </q-card-section>
+        </q-card-section>
 
-      <q-card-actions vertical class="q-pa-md q-pt-none">
+        <q-card-actions vertical class="q-pa-md q-pt-none">
         <q-btn
           :label="isRegisterMode ? 'Criar conta' : 'Entrar'"
           color="dark"
           unelevated
           no-caps
+          type="submit"
           :loading="loading"
-          @click="isRegisterMode ? handleRegister() : handleLogin()"
         />
         <q-btn
           :label="isRegisterMode ? 'Ja tenho conta' : 'Nao tenho conta (Registrar-se)'"
@@ -76,7 +77,8 @@
           :disable="loading"
           @click="handleGuest"
         />
-      </q-card-actions>
+        </q-card-actions>
+      </q-form>
     </q-card>
   </q-page>
 </template>
@@ -122,6 +124,15 @@ function isValidEmail(rawEmail) {
 
 function providerMessage() {
   return 'Use um email de provedor permitido: gmail, outlook, hotmail, live, icloud ou yahoo.'
+}
+
+function submitAuth() {
+  if (isRegisterMode.value) {
+    handleRegister()
+    return
+  }
+
+  handleLogin()
 }
 
 async function handleLogin() {

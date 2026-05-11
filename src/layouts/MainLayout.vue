@@ -15,7 +15,41 @@
             <q-badge v-if="cartCount > 0" color="deep-orange-8" floating>{{ cartCount }}</q-badge>
           </q-btn>
 
-          <q-btn flat no-caps class="enter-btn" label="Entrar" @click="goLogin" />
+          <q-btn
+            v-if="!isLoggedIn"
+            flat
+            round
+            icon="account_circle"
+            class="profile-btn"
+            @click="goLogin"
+          />
+
+          <q-btn v-else flat round icon="account_circle" class="profile-btn" @click.stop="toggleProfileMenu">
+            <q-menu
+              v-model="profileMenuOpen"
+              anchor="bottom right"
+              self="top right"
+              no-parent-event
+            >
+              <q-list style="min-width: 220px">
+                <q-item>
+                  <q-item-section>
+                    <q-item-label class="text-weight-bold">{{ userLabel }}</q-item-label>
+                    <q-item-label caption>{{ userEmail }}</q-item-label>
+                  </q-item-section>
+                </q-item>
+                <q-separator />
+                <q-item clickable v-close-popup @click="logout">
+                  <q-item-section avatar>
+                    <q-icon name="logout" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label>Sair</q-item-label>
+                  </q-item-section>
+                </q-item>
+              </q-list>
+            </q-menu>
+          </q-btn>
         </nav>
       </q-toolbar>
     </q-header>
@@ -107,6 +141,7 @@ const route = useRoute()
 const router = useRouter()
 
 const isLoginPage = computed(() => route.path === '/login')
+const sessionData = ref({ mode: 'guest', token: null, user: null })
 const cartDrawerOpen = ref(false)
 const cartItems = ref([])
 const cartTotal = ref(0)
@@ -114,7 +149,18 @@ const cartLoading = ref(false)
 const cartError = ref('')
 const removingItemId = ref(null)
 const updatingItemId = ref(null)
+const profileMenuOpen = ref(false)
 const cartCount = computed(() => cartItems.value.reduce((acc, item) => acc + Number(item.quantity), 0))
+const isLoggedIn = computed(() => sessionData.value.mode === 'auth' && Boolean(sessionData.value.token))
+const userLabel = computed(() => {
+  const name = sessionData.value?.user?.name
+  return name ? `Ola, ${name}` : 'Logado'
+})
+const userEmail = computed(() => sessionData.value?.user?.email || '')
+
+function loadSessionData() {
+  sessionData.value = JSON.parse(localStorage.getItem('bf_session') || '{"mode":"guest","token":null,"user":null}')
+}
 
 function goLogin() {
   router.push('/login')
@@ -126,6 +172,10 @@ function goMenu() {
 
 function goAbout() {
   router.push('/lanches#sobre')
+}
+
+function toggleProfileMenu() {
+  profileMenuOpen.value = !profileMenuOpen.value
 }
 
 function formatPrice(value) {
@@ -269,10 +319,21 @@ function toggleCart() {
 }
 
 function handleCartUpdated() {
+  loadSessionData()
   loadCart()
 }
 
+function logout() {
+  profileMenuOpen.value = false
+  localStorage.removeItem('bf_session')
+  loadSessionData()
+  cartItems.value = []
+  cartTotal.value = 0
+  router.push('/login')
+}
+
 onMounted(() => {
+  loadSessionData()
   window.addEventListener('bf-cart-updated', handleCartUpdated)
 })
 
