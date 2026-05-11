@@ -54,15 +54,23 @@ body {
 }
 
 .enter-btn {
-  border: 1px solid var(--bf-border);
+  border: 1px solid #c7b395;
   border-radius: 10px;
-  background: #ece8df;
+  background: #f7efe0;
+  color: #2a1e16;
+  font-weight: 600;
   padding-inline: 12px;
 }
 
 .cart-btn {
-  background: #f2ece0;
-  border: 1px solid var(--bf-border);
+  background: #f7efe0;
+  border: 1px solid #c7b395;
+  color: #2a1e16;
+}
+
+.enter-btn:hover,
+.cart-btn:hover {
+  background: #f2e2c8;
 }
 
 .cart-panel {
