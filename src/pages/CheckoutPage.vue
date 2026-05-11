@@ -79,13 +79,13 @@
                 map-options
               />
               <q-input v-model="form.card_name" label="Nome no cartao" outlined dense />
-              <q-input v-model="form.card_number" label="Numero do cartao" outlined dense mask="#### #### #### ####" fill-mask />
+              <q-input v-model="form.card_number" label="Numero do cartao" outlined dense mask="#### #### #### ####" />
               <div class="row q-col-gutter-sm">
                 <div class="col-6">
-                  <q-input v-model="form.card_expiry" label="Validade" outlined dense mask="##/##" fill-mask />
+                  <q-input v-model="form.card_expiry" label="Validade" outlined dense mask="##/##" />
                 </div>
                 <div class="col-6">
-                  <q-input v-model="form.card_cvv" label="CVV" outlined dense mask="###" fill-mask />
+                  <q-input v-model="form.card_cvv" label="CVV" outlined dense mask="###" />
                 </div>
               </div>
             </div>
