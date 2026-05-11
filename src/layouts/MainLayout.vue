@@ -24,13 +24,8 @@
             @click="goLogin"
           />
 
-          <q-btn v-else flat round icon="account_circle" class="profile-btn" @click.stop="toggleProfileMenu">
-            <q-menu
-              v-model="profileMenuOpen"
-              anchor="bottom right"
-              self="top right"
-              no-parent-event
-            >
+          <q-btn v-else flat round icon="account_circle" class="profile-btn">
+            <q-menu anchor="bottom right" self="top right">
               <q-list style="min-width: 220px">
                 <q-item>
                   <q-item-section>
@@ -121,6 +116,8 @@
           <span>Total</span>
           <span>R$ {{ formatPrice(cartTotal) }}</span>
         </div>
+
+        <q-btn class="q-mt-md full-width checkout-btn" color="deep-orange-8" no-caps unelevated label="Finalizar pedido" :disable="cartItems.length === 0" @click="goCheckout" />
       </div>
     </q-drawer>
 
@@ -149,7 +146,6 @@ const cartLoading = ref(false)
 const cartError = ref('')
 const removingItemId = ref(null)
 const updatingItemId = ref(null)
-const profileMenuOpen = ref(false)
 const cartCount = computed(() => cartItems.value.reduce((acc, item) => acc + Number(item.quantity), 0))
 const isLoggedIn = computed(() => sessionData.value.mode === 'auth' && Boolean(sessionData.value.token))
 const userLabel = computed(() => {
@@ -174,8 +170,10 @@ function goAbout() {
   router.push('/lanches#sobre')
 }
 
-function toggleProfileMenu() {
-  profileMenuOpen.value = !profileMenuOpen.value
+
+function goCheckout() {
+  cartDrawerOpen.value = false
+  router.push('/checkout')
 }
 
 function formatPrice(value) {
@@ -324,7 +322,6 @@ function handleCartUpdated() {
 }
 
 function logout() {
-  profileMenuOpen.value = false
   localStorage.removeItem('bf_session')
   loadSessionData()
   cartItems.value = []

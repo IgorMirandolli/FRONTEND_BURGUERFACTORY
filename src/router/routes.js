@@ -6,6 +6,7 @@ const routes = [
       { path: '', redirect: '/login' },
       { path: 'login', component: () => import('pages/LoginPage.vue') },
       { path: 'lanches', component: () => import('pages/MenuPage.vue') },
+      { path: 'checkout', component: () => import('pages/CheckoutPage.vue') },
     ],
   },
 
