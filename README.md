@@ -1,7 +1,7 @@
 # 🍔 Burger Factory — Frontend
 
 <p align="center">
-  <img src="./src/assets/logoburguerfactory.png.png" width="260"/>
+  <img src="./src/assets/logoburguerfactory.png" width="260"/>
 </p>
 
 <p align="center">
