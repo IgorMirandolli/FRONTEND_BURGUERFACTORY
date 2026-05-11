@@ -79,7 +79,7 @@
         <div class="menu-grid">
           <q-card v-for="item in section.items" :key="item.id" class="menu-card" flat bordered>
             <q-img :src="item.imageUrl" :alt="item.name" class="menu-item-image" loading="lazy" fit="cover" />
-            <q-card-section>
+            <q-card-section class="menu-card-content">
               <div class="menu-item-title q-mb-xs">{{ item.name }}</div>
               <div class="menu-description q-mb-md">{{ item.description }}</div>
               <div class="menu-price">R$ {{ formatPrice(item.price) }}</div>
@@ -89,7 +89,8 @@
                 no-caps
                 unelevated
                 color="deep-orange-8"
-                label="Adicionar"
+                icon="add_shopping_cart"
+                label="Adicionar ao carrinho"
                 :loading="addingItemId === item.id"
                 @click="addToCart(item.id)"
               />

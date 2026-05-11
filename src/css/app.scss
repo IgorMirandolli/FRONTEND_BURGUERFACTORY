@@ -129,6 +129,12 @@ body {
   border-radius: 14px;
   border-color: var(--bf-border);
   background: var(--bf-paper);
+  display: flex;
+  flex-direction: column;
+}
+
+.menu-card-content {
+  flex: 1;
 }
 
 .menu-item-title {
