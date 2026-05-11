@@ -6,9 +6,9 @@
         <h1 class="home-title q-my-md">O SABOR QUE VOCE MONTA DO SEU JEITO.</h1>
         <p class="home-subtitle">Faca login para acompanhar pedidos ou compre rapidamente sem cadastro.</p>
 
-        <div class="row q-gutter-sm q-mt-md">
+        <div v-if="!isLoggedIn" class="row q-gutter-sm q-mt-md">
           <q-btn color="deep-orange-8" no-caps unelevated label="Fazer Login" @click="goLogin" />
-          <q-btn color="deep-orange-8" no-caps outline label="Comprar sem login" @click="continueAsGuest" />
+          <q-btn color="deep-orange-8" no-caps outline label="Registrar-se" @click="goRegister" />
         </div>
       </div>
 
@@ -146,6 +146,11 @@ const menuSections = computed(() => {
   }))
 })
 
+const isLoggedIn = computed(() => {
+  const session = JSON.parse(localStorage.getItem('bf_session') || '{}')
+  return session.mode === 'auth' && Boolean(session.token)
+})
+
 function formatPrice(value) {
   return Number(value).toFixed(2).replace('.', ',')
 }
@@ -154,15 +159,8 @@ function goLogin() {
   router.push('/login')
 }
 
-function continueAsGuest() {
-  localStorage.setItem(
-    'bf_session',
-    JSON.stringify({
-      mode: 'guest',
-      token: null,
-      user: null,
-    })
-  )
+function goRegister() {
+  router.push('/login')
 }
 
 function getOrCreateGuestSessionId() {
