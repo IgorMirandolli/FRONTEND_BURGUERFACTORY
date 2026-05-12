@@ -175,7 +175,7 @@ const activeCategoryLabel = computed(() => {
 const visibleItems = computed(() => {
   const categoryItems = menuItems.value.filter((item) => item.category === activeCategory.value)
   const source = categoryItems.length > 0 ? categoryItems : menuItems.value
-  return source.slice(0, 3)
+  return source
 })
 
 function resolveImageUrl(imageUrl) {
