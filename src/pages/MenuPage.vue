@@ -17,7 +17,7 @@
           v-model="heroSlide"
           animated
           infinite
-          autoplay="3500"
+          :autoplay="3500"
           arrows
           navigation
           height="100%"
@@ -82,6 +82,17 @@
             <q-card-section class="menu-card-content">
               <div class="menu-item-title q-mb-xs">{{ item.name }}</div>
               <div class="menu-description q-mb-md">{{ item.description }}</div>
+              <q-select
+                v-if="isNaturalJuice(item)"
+                v-model="juiceFlavorByProduct[item.id]"
+                :options="juiceFlavorOptions"
+                label="Escolha o sabor"
+                dense
+                outlined
+                emit-value
+                map-options
+                class="q-mb-md"
+              />
               <div class="menu-price">R$ {{ formatPrice(item.price) }}</div>
             </q-card-section>
             <q-card-actions align="right">
@@ -93,7 +104,7 @@
                 label="Adicionar ao carrinho"
                 class="add-cart-btn"
                 :loading="addingItemId === item.id"
-                @click="addToCart(item.id)"
+                @click="addToCart(item)"
               />
             </q-card-actions>
           </q-card>
@@ -116,6 +127,13 @@ const errorMessage = ref('')
 const cartMessage = ref('')
 const heroSlide = ref('hamburguer')
 const addingItemId = ref(null)
+const juiceFlavorByProduct = ref({})
+const juiceFlavorOptions = [
+  { label: 'Laranja', value: 'laranja' },
+  { label: 'Manga', value: 'manga' },
+  { label: 'Morango', value: 'morango' },
+  { label: 'Maracuja', value: 'maracuja' },
+]
 
 const heroSlides = [
   {
@@ -163,6 +181,10 @@ function goRegister() {
   router.push('/login')
 }
 
+function isNaturalJuice(item) {
+  return String(item?.name || '').toLowerCase().includes('suco natural')
+}
+
 function getOrCreateGuestSessionId() {
   const existing = localStorage.getItem('bf_guest_session_id');
   if (existing) {
@@ -174,9 +196,9 @@ function getOrCreateGuestSessionId() {
   return generated;
 }
 
-async function addToCart(productId) {
+async function addToCart(item) {
   cartMessage.value = '';
-  addingItemId.value = productId;
+  addingItemId.value = item.id;
 
   try {
     const session = JSON.parse(localStorage.getItem('bf_session') || '{}');
@@ -193,9 +215,15 @@ async function addToCart(productId) {
     }
 
     const body = {
-      product_id: productId,
+      product_id: item.id,
       quantity: 1,
     };
+
+    if (isNaturalJuice(item)) {
+      const selectedFlavor = juiceFlavorByProduct.value[item.id] || juiceFlavorOptions[0].value
+      juiceFlavorByProduct.value[item.id] = selectedFlavor
+      body.notes = `Sabor: ${selectedFlavor}`
+    }
 
     if (!isAuth) {
       body.session_id = sessionId;

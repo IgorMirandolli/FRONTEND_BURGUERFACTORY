@@ -16,6 +16,45 @@ body {
   color: var(--bf-text);
 }
 
+::selection {
+  background: rgba(214, 70, 28, 0.28);
+  color: #2a1e16;
+}
+
+::-moz-selection {
+  background: rgba(214, 70, 28, 0.28);
+  color: #2a1e16;
+}
+
+a,
+button,
+.q-btn,
+.q-field__native,
+.q-field__input {
+  -webkit-tap-highlight-color: rgba(214, 70, 28, 0.25);
+}
+
+.q-btn:focus-visible,
+.q-field--focused .q-field__control,
+a:focus-visible,
+button:focus-visible {
+  outline-color: var(--bf-accent);
+}
+
+.q-field--outlined.q-field--focused .q-field__control:before,
+.q-field--outlined.q-field--highlighted .q-field__control:after {
+  border-color: var(--bf-accent) !important;
+}
+
+.q-field--focused .q-field__label,
+.q-field--highlighted .q-field__label {
+  color: var(--bf-accent) !important;
+}
+
+.q-field--outlined.q-field--focused .q-field__control {
+  box-shadow: 0 0 0 1px var(--bf-accent) inset;
+}
+
 .topbar {
   background: #e6dccf;
   border-bottom: 1px solid #d4c5af;
