@@ -1,26 +1,24 @@
 <template>
-  <q-layout view="lHh lpr lFf" class="site-layout">
-    <q-header v-if="!isLoginPage" class="topbar">
-      <q-toolbar class="topbar-inner">
-        <div class="brand-wrap row items-center no-wrap">
-          <img :src="logo" alt="Burger Factory" class="brand-logo" />
-          <q-toolbar-title class="text-weight-bold brand-title">BURGUERFACTORY</q-toolbar-title>
-        </div>
+  <q-layout view="hHh lpr lFf" class="bf-layout">
+    <q-header v-if="!isLoginPage" class="bf-header">
+      <q-toolbar class="bf-header-bar">
+        <button type="button" class="bf-brand" @click="goMenu">
+          <img :src="logo" alt="Burger Factory" class="bf-brand-logo" />
+          <div class="bf-brand-text">
+            <span class="bf-brand-line">BURGER</span>
+            <span class="bf-brand-line bf-brand-line-accent">FACTORY</span>
+          </div>
+        </button>
 
-        <nav class="nav-links row items-center no-wrap">
-          <a href="/lanches#menu" class="nav-link" @click.prevent="goMenu">Cardapio</a>
-          <a href="/lanches#sobre" class="nav-link" @click.prevent="goAbout">Sobre</a>
-          <q-btn
-            flat
-            no-caps
-            icon="receipt_long"
-            label="Pedidos"
-            class="orders-link-btn"
-            @click="goOrders"
-          />
+        <nav class="bf-nav">
+          <button type="button" class="bf-nav-link" @click="goMenu">Cardapio</button>
+          <button type="button" class="bf-nav-link" @click="goAbout">Sobre</button>
+          <button type="button" class="bf-nav-link" @click="goOrders">Pedidos</button>
+        </nav>
 
-          <q-btn flat round icon="shopping_cart" class="cart-btn" @click="toggleCart">
-            <q-badge v-if="cartCount > 0" color="deep-orange-8" floating>{{ cartCount }}</q-badge>
+        <div class="bf-actions">
+          <q-btn flat round icon="shopping_cart" class="bf-icon-btn" @click="toggleCart">
+            <q-badge v-if="cartCount > 0" class="bf-cart-badge" floating rounded>{{ cartCount }}</q-badge>
           </q-btn>
 
           <q-btn
@@ -28,8 +26,8 @@
             flat
             round
             icon="account_circle"
-            class="profile-btn"
-            @click.stop="handleProfileClick"
+            class="bf-icon-btn"
+            @click.stop="toggleProfileMenu"
           >
             <q-menu
               v-model="profileMenuOpen"
@@ -56,11 +54,18 @@
               </q-list>
             </q-menu>
           </q-btn>
-        </nav>
+        </div>
       </q-toolbar>
     </q-header>
 
-    <q-drawer v-if="!isLoginPage" v-model="cartDrawerOpen" side="right" overlay bordered :width="360">
+    <q-drawer
+      v-if="!isLoginPage"
+      v-model="cartDrawerOpen"
+      side="right"
+      overlay
+      bordered
+      :width="360"
+    >
       <div class="cart-panel q-pa-md">
         <div class="row items-center justify-between q-mb-md">
           <div class="text-h6 text-weight-bold">Seu carrinho</div>
@@ -107,7 +112,9 @@
               </q-item-label>
             </q-item-section>
             <q-item-section side class="items-end">
-              <q-item-label class="text-weight-bold">R$ {{ formatPrice(item.unit_price * item.quantity) }}</q-item-label>
+              <q-item-label class="text-weight-bold">
+                R$ {{ formatPrice(item.unit_price * item.quantity) }}
+              </q-item-label>
               <q-btn
                 flat
                 dense
@@ -128,11 +135,19 @@
           <span>R$ {{ formatPrice(cartTotal) }}</span>
         </div>
 
-        <q-btn class="q-mt-md full-width checkout-btn" color="deep-orange-8" no-caps unelevated label="Finalizar pedido" :disable="cartItems.length === 0" @click="goCheckout" />
+        <q-btn
+          class="q-mt-md full-width checkout-btn"
+          color="deep-orange-8"
+          no-caps
+          unelevated
+          label="Finalizar pedido"
+          :disable="cartItems.length === 0"
+          @click="goCheckout"
+        />
       </div>
     </q-drawer>
 
-    <q-page-container>
+    <q-page-container class="bf-page-container">
       <router-view />
     </q-page-container>
   </q-layout>
@@ -158,6 +173,7 @@ const cartError = ref('')
 const removingItemId = ref(null)
 const updatingItemId = ref(null)
 const profileMenuOpen = ref(false)
+
 const cartCount = computed(() => cartItems.value.reduce((acc, item) => acc + Number(item.quantity), 0))
 const isLoggedIn = computed(() => sessionData.value.mode === 'auth' && Boolean(sessionData.value.token))
 const userLabel = computed(() => {
@@ -167,15 +183,17 @@ const userLabel = computed(() => {
 const userEmail = computed(() => sessionData.value?.user?.email || '')
 
 function loadSessionData() {
-  sessionData.value = JSON.parse(localStorage.getItem('bf_session') || '{"mode":"guest","token":null,"user":null}')
+  sessionData.value = JSON.parse(
+    localStorage.getItem('bf_session') || '{"mode":"guest","token":null,"user":null}'
+  )
 }
 
 function goMenu() {
-  router.push('/lanches#menu')
+  router.push({ path: '/lanches', hash: '#menu' })
 }
 
 function goAbout() {
-  router.push('/lanches#sobre')
+  router.push({ path: '/lanches', hash: '#sobre' })
 }
 
 function goOrders() {
@@ -185,11 +203,6 @@ function goOrders() {
 function toggleProfileMenu() {
   profileMenuOpen.value = !profileMenuOpen.value
 }
-
-function handleProfileClick() {
-  toggleProfileMenu()
-}
-
 
 function goCheckout() {
   cartDrawerOpen.value = false
@@ -237,7 +250,6 @@ async function loadCart(options = {}) {
 
   try {
     const { headers, url } = getCartRequestContext()
-
     const response = await fetch(url, { headers })
     const data = await response.json()
 
@@ -273,7 +285,6 @@ async function removeCartItem(itemId) {
       method: 'DELETE',
       headers,
     })
-
     const data = await response.json()
 
     if (!response.ok) {
@@ -312,7 +323,6 @@ async function updateCartItemQuantity(item, nextQuantity) {
       },
       body: JSON.stringify({ quantity: nextQuantity }),
     })
-
     const data = await response.json()
 
     if (!response.ok) {
@@ -331,6 +341,7 @@ async function updateCartItemQuantity(item, nextQuantity) {
 
 function toggleCart() {
   cartDrawerOpen.value = !cartDrawerOpen.value
+
   if (cartDrawerOpen.value) {
     loadCart()
   }
@@ -338,7 +349,12 @@ function toggleCart() {
 
 function handleCartUpdated() {
   loadSessionData()
-  loadCart()
+
+  if (cartDrawerOpen.value) {
+    loadCart({ silent: true })
+  } else {
+    loadCart()
+  }
 }
 
 function logout() {
@@ -359,6 +375,7 @@ watch(
   () => route.fullPath,
   () => {
     loadSessionData()
+    profileMenuOpen.value = false
   }
 )
 
@@ -366,3 +383,131 @@ onBeforeUnmount(() => {
   window.removeEventListener('bf-cart-updated', handleCartUpdated)
 })
 </script>
+
+<style scoped>
+.bf-layout {
+  background: #ffffff;
+}
+
+.bf-header {
+  background: #ffffff;
+  border-bottom: 1px solid #f0e5d8;
+}
+
+.bf-header-bar {
+  max-width: 1360px;
+  margin: 0 auto;
+  height: 90px;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: 300px 1fr 180px;
+  align-items: center;
+  gap: 12px;
+}
+
+.bf-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.bf-brand-logo {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+}
+
+.bf-brand-text {
+  line-height: 0.9;
+  text-align: left;
+}
+
+.bf-brand-line {
+  display: block;
+  font-family: 'Anton', sans-serif;
+  font-size: 2rem;
+  letter-spacing: 0.03em;
+  color: #1f1611;
+}
+
+.bf-brand-line-accent {
+  color: #ea7a21;
+  letter-spacing: 0.16em;
+}
+
+.bf-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 52px;
+}
+
+.bf-nav-link {
+  border: 0;
+  background: transparent;
+  color: #201712;
+  font-size: 1.09rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 6px 0;
+}
+
+.bf-nav-link:hover {
+  color: #e9741f;
+}
+
+.bf-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
+}
+
+.bf-icon-btn {
+  color: #211812;
+}
+
+.bf-cart-badge {
+  min-width: 21px;
+  height: 21px;
+  padding: 0 6px;
+  background: #f07a20;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 21px;
+  right: -4px;
+  top: -2px;
+}
+
+.checkout-btn {
+  border-radius: 12px;
+}
+
+.bf-page-container {
+  background: #ffffff;
+}
+
+@media (max-width: 1024px) {
+  .bf-header-bar {
+    grid-template-columns: 1fr auto;
+    height: auto;
+    min-height: 86px;
+    padding: 8px 14px;
+  }
+
+  .bf-nav {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+    gap: 24px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+}
+</style>
+
+
