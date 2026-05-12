@@ -149,9 +149,9 @@
 
         <q-card class="checkout-status-card q-mt-md" flat bordered>
           <q-card-section>
-            <div class="text-subtitle1 text-weight-bold">Status do pedido (em breve)</div>
+            <div class="text-subtitle1 text-weight-bold">Status do pedido</div>
             <p class="q-mt-sm q-mb-none text-grey-7">
-              Esta pagina ja fica pronta para receber rastreamento: recebido, preparando e saiu para entrega.
+              Apos confirmar, voce sera redirecionado para a aba <strong>Pedidos</strong> para acompanhar status e mapa.
             </p>
           </q-card-section>
         </q-card>
@@ -216,6 +216,7 @@ const deliveryCardTypeOptions = [
   { label: 'Credito', value: 'credito' },
   { label: 'Debito', value: 'debito' },
 ]
+
 
 function formatPrice(value) {
   return Number(value || 0).toFixed(2).replace('.', ',')
@@ -357,6 +358,7 @@ async function submitOrder() {
     cartItems.value = []
     cartTotal.value = 0
     window.dispatchEvent(new Event('bf-cart-updated'))
+    router.push('/pedidos')
   } catch {
     errorMessage.value = 'Erro de conexao ao finalizar pedido.'
   } finally {
