@@ -160,11 +160,11 @@ const activeCategory = ref('combos')
 const defaultDescription = 'Ingredientes selecionados e preparo no ponto certo.'
 
 const categoriesBar = [
-  { key: 'combos', label: 'Combos', icon: 'fastfood' },
-  { key: 'hamburgueres', label: 'Hamburgueres', icon: 'lunch_dining' },
-  { key: 'fritas', label: 'Fritas', icon: 'restaurant_menu' },
-  { key: 'bebidas', label: 'Bebidas', icon: 'local_drink' },
-  { key: 'sobremesas', label: 'Sobremesas', icon: 'icecream' },
+  { key: 'combos', id: 1, label: 'Combos', icon: 'fastfood' },
+  { key: 'hamburgueres', id: 2, label: 'Hamburgueres', icon: 'lunch_dining' },
+  { key: 'fritas', id: 3, label: 'Fritas', icon: 'restaurant_menu' },
+  { key: 'bebidas', id: 4, label: 'Bebidas', icon: 'local_drink' },
+  { key: 'sobremesas', id: 5, label: 'Sobremesas', icon: 'icecream' },
 ]
 
 const activeCategoryLabel = computed(() => {
@@ -173,9 +173,17 @@ const activeCategoryLabel = computed(() => {
 })
 
 const visibleItems = computed(() => {
-  const categoryItems = menuItems.value.filter((item) => item.category === activeCategory.value)
-  const source = categoryItems.length > 0 ? categoryItems : menuItems.value
-  return source
+  const selectedCategory = categoriesBar.find((category) => category.key === activeCategory.value)
+
+  return menuItems.value.filter((item) => {
+    const itemCategoryId = Number(item.categoryId ?? item.category_id ?? 0)
+    const itemCategorySlug = String(item.category || '').toLowerCase()
+
+    const matchesById = Number.isInteger(selectedCategory?.id) && itemCategoryId === selectedCategory.id
+    const matchesBySlug = itemCategorySlug === activeCategory.value
+
+    return matchesById || matchesBySlug
+  })
 })
 
 function resolveImageUrl(imageUrl) {
@@ -282,7 +290,7 @@ onMounted(() => {
 
 <style scoped>
 .bf-menu-page {
-  background: #ffffff;
+  background: var(--bf-page-bg);
   padding: 0 0 40px;
 }
 
@@ -297,7 +305,7 @@ onMounted(() => {
   display: grid;
   grid-template-columns: minmax(420px, 44%) 1fr;
   min-height: 500px;
-  background: #ffffff;
+  background: var(--bf-page-bg);
   overflow: hidden;
 }
 

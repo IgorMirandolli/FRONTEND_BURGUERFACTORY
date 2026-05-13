@@ -418,7 +418,7 @@ onMounted(() => {
 
 <style scoped>
 .bf-checkout-page {
-  background: #ffffff;
+  background: var(--bf-page-bg);
   padding: 26px 0 36px;
 }
 

@@ -386,11 +386,11 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .bf-layout {
-  background: #ffffff;
+  background: var(--bf-page-bg);
 }
 
 .bf-header {
-  background: #ffffff;
+  background: #fffdf8;
   border-bottom: 1px solid #f0e5d8;
 }
 
@@ -489,7 +489,7 @@ onBeforeUnmount(() => {
 }
 
 .bf-page-container {
-  background: #ffffff;
+  background: var(--bf-page-bg);
 }
 
 @media (max-width: 1024px) {
