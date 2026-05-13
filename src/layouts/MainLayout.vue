@@ -173,7 +173,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 const route = useRoute()
 const router = useRouter()
 
-const isLoginPage = computed(() => route.path === '/login')
+const isLoginPage = computed(() => route.path === '/login' || route.path === '/register')
 const sessionData = ref({ mode: 'guest', token: null, user: null })
 const cartDrawerOpen = ref(false)
 const cartItems = ref([])

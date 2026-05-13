@@ -1,7 +1,7 @@
 ﻿<template>
-  <q-page class="bf-login-page">
-    <div class="bf-login-shell">
-      <aside class="bf-login-left" aria-hidden="true">
+  <q-page class="bf-register-page">
+    <div class="bf-register-shell">
+      <aside class="bf-register-left" aria-hidden="true">
         <div class="bf-left-overlay"></div>
         <div class="bf-left-content">
           <p class="bf-left-kicker">BEM-VINDO A</p>
@@ -11,28 +11,69 @@
           </h1>
           <div class="bf-left-line"></div>
           <p class="bf-left-text">
-            Faca login para acompanhar seus pedidos, salvar favoritos e muito mais.
+            Crie sua conta e aproveite
+            uma experiencia completa:
           </p>
+          <ul class="bf-left-list">
+            <li>Acompanhe seus pedidos</li>
+            <li>Salve seus favoritos</li>
+            <li>Receba ofertas exclusivas</li>
+          </ul>
         </div>
       </aside>
 
-      <section class="bf-login-right">
-        <div class="bf-login-panel">
-          <img :src="logo" alt="Burger Factory" class="bf-login-logo" />
+      <section class="bf-register-right">
+        <div class="bf-register-panel">
+          <img :src="logo" alt="Burger Factory" class="bf-register-logo" />
 
-          <h2 class="bf-login-title">Entrar na sua conta</h2>
-          <p class="bf-login-subtitle">Que bom ter voce de volta!</p>
+          <h2 class="bf-register-title">Criar sua conta</h2>
+          <p class="bf-register-subtitle">E rapido e facil!</p>
 
-          <q-form class="bf-login-form" @submit.prevent="handleLogin">
+          <q-form class="bf-register-form" @submit.prevent="handleRegister">
+            <div class="bf-row-two">
+              <div class="bf-field-block">
+                <label class="bf-field-label">Nome completo</label>
+                <q-input
+                  v-model="name"
+                  outlined
+                  placeholder="Seu nome completo"
+                  hide-bottom-space
+                  class="bf-field"
+                >
+                  <template #prepend>
+                    <q-icon name="person" />
+                  </template>
+                </q-input>
+              </div>
+
+              <div class="bf-field-block">
+                <label class="bf-field-label">Telefone</label>
+                <q-input
+                  v-model="phone"
+                  outlined
+                  mask="(##) #####-####"
+                  fill-mask
+                  placeholder="(11) 98765-4321"
+                  hide-bottom-space
+                  class="bf-field"
+                >
+                  <template #prepend>
+                    <q-icon name="call" />
+                  </template>
+                </q-input>
+              </div>
+            </div>
+
             <div class="bf-field-block">
+              <label class="bf-field-label">E-mail</label>
               <q-input
                 v-model="email"
                 outlined
                 type="email"
-                label="E-mail"
+                placeholder="seu@email.com"
                 hide-bottom-space
                 class="bf-field"
-                >ass="bf-field" >
+              >
                 <template #prepend>
                   <q-icon name="mail" />
                 </template>
@@ -61,13 +102,43 @@
                 </template>
               </q-input>
             </div>
+            <p class="bf-hint">Minimo de 6 caracteres</p>
 
-            <div class="bf-form-row">
-              <q-checkbox v-model="rememberMe" label="Lembrar-me" color="deep-orange-8" />
-              <button type="button" class="bf-link-btn" @click="handleForgotPassword">
-                Esqueci minha senha
-              </button>
+            <div class="bf-field-block">
+              <label class="bf-field-label">Confirmar senha</label>
+              <q-input
+                v-model="confirmPassword"
+                outlined
+                :type="showConfirmPassword ? 'text' : 'password'"
+                placeholder="********"
+                hide-bottom-space
+                class="bf-field"
+              >
+                <template #prepend>
+                  <q-icon name="lock" />
+                </template>
+                <template #append>
+                  <q-icon
+                    :name="showConfirmPassword ? 'visibility_off' : 'visibility'"
+                    class="cursor-pointer"
+                    @click="showConfirmPassword = !showConfirmPassword"
+                  />
+                </template>
+              </q-input>
             </div>
+
+            <q-checkbox
+              v-model="acceptedTerms"
+              color="deep-orange-8"
+              class="bf-terms"
+            >
+              <span>
+                Eu concordo com os
+                <button type="button" class="bf-link-btn" @click="showTermsInfo">Termos de uso</button>
+                e
+                <button type="button" class="bf-link-btn" @click="showPrivacyInfo">Politica de privacidade</button>
+              </span>
+            </q-checkbox>
 
             <q-banner v-if="errorMessage" class="bg-red-1 text-red-9 rounded-borders q-mb-sm">
               {{ errorMessage }}
@@ -82,7 +153,7 @@
               no-caps
               unelevated
               class="bf-submit-btn"
-              label="Entrar"
+              label="Criar conta"
               :loading="loading"
             />
           </q-form>
@@ -93,18 +164,18 @@
 
           <button type="button" class="bf-social-btn" @click="handleSocial('Google')">
             <span class="bf-social-icon google">G</span>
-            <span>Continuar com Google</span>
+            <span>Cadastrar com Google</span>
           </button>
 
           <button type="button" class="bf-social-btn" @click="handleSocial('Facebook')">
             <span class="bf-social-icon facebook">f</span>
-            <span>Continuar com Facebook</span>
+            <span>Cadastrar com Facebook</span>
           </button>
 
-          <div class="bf-create-wrap">
-            <p>Ainda nao tem uma conta?</p>
-            <button type="button" class="bf-create-btn" @click="handleCreateAccount">
-              Criar conta
+          <div class="bf-login-wrap">
+            <p>Ja tem uma conta?</p>
+            <button type="button" class="bf-login-btn" @click="goLogin">
+              Fazer login
               <q-icon name="arrow_forward" size="18px" />
             </button>
           </div>
@@ -120,7 +191,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import logo from 'src/assets/logoburguerfactory.png'
 
@@ -137,10 +208,14 @@ const ALLOWED_EMAIL_DOMAINS = new Set([
   'yahoo.com.br',
 ])
 
+const name = ref('')
+const phone = ref('')
 const email = ref('')
 const password = ref('')
+const confirmPassword = ref('')
 const showPassword = ref(false)
-const rememberMe = ref(false)
+const showConfirmPassword = ref(false)
+const acceptedTerms = ref(true)
 const loading = ref(false)
 const errorMessage = ref('')
 const infoMessage = ref('')
@@ -160,25 +235,28 @@ function providerMessage() {
   return 'Use um email valido: gmail, outlook, hotmail, live, icloud ou yahoo.'
 }
 
-function handleForgotPassword() {
-  infoMessage.value = 'Recuperacao de senha em breve.'
+function showTermsInfo() {
+  infoMessage.value = 'Termos de uso em breve.'
+}
+
+function showPrivacyInfo() {
+  infoMessage.value = 'Politica de privacidade em breve.'
 }
 
 function handleSocial(provider) {
-  infoMessage.value = `Login com ${provider} em breve.`
+  infoMessage.value = `Cadastro com ${provider} em breve.`
 }
 
-function handleCreateAccount() {
-  infoMessage.value = ''
-  router.push('/register')
+function goLogin() {
+  router.push('/login')
 }
 
-async function handleLogin() {
+async function handleRegister() {
   errorMessage.value = ''
   infoMessage.value = ''
 
-  if (!email.value || !password.value) {
-    errorMessage.value = 'Preencha e-mail e senha.'
+  if (!name.value || !phone.value || !email.value || !password.value || !confirmPassword.value) {
+    errorMessage.value = 'Preencha todos os campos obrigatorios.'
     return
   }
 
@@ -187,13 +265,29 @@ async function handleLogin() {
     return
   }
 
+  if (password.value.length < 6) {
+    errorMessage.value = 'A senha precisa ter no minimo 6 caracteres.'
+    return
+  }
+
+  if (password.value !== confirmPassword.value) {
+    errorMessage.value = 'As senhas nao coincidem.'
+    return
+  }
+
+  if (!acceptedTerms.value) {
+    errorMessage.value = 'Voce precisa aceitar os termos para continuar.'
+    return
+  }
+
   loading.value = true
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+    const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        name: name.value,
         email: email.value,
         password: password.value,
       }),
@@ -202,7 +296,7 @@ async function handleLogin() {
     const data = await response.json()
 
     if (!response.ok) {
-      errorMessage.value = data.message || 'Nao foi possivel entrar.'
+      errorMessage.value = data.message || 'Nao foi possivel criar conta.'
       return
     }
 
@@ -212,14 +306,8 @@ async function handleLogin() {
         mode: 'auth',
         token: data.token,
         user: data.user,
-      }),
+      })
     )
-
-    if (rememberMe.value) {
-      localStorage.setItem('bf_remember_email', email.value)
-    } else {
-      localStorage.removeItem('bf_remember_email')
-    }
 
     router.push('/lanches')
   } catch {
@@ -228,37 +316,24 @@ async function handleLogin() {
     loading.value = false
   }
 }
-
-onMounted(() => {
-  const rememberedEmail = localStorage.getItem('bf_remember_email')
-  if (rememberedEmail) {
-    email.value = rememberedEmail
-    rememberMe.value = true
-  }
-})
 </script>
 
 <style scoped>
-.bf-login-page {
+.bf-register-page {
   min-height: 100vh;
   background: #fffdf8;
 }
 
-.bf-login-shell {
+.bf-register-shell {
   min-height: 100vh;
   display: grid;
   grid-template-columns: minmax(360px, 40%) 1fr;
 }
 
-.bf-login-left {
+.bf-register-left {
   position: relative;
   background-image:
-    linear-gradient(
-      180deg,
-      rgba(0, 0, 0, 0.86) 0%,
-      rgba(0, 0, 0, 0.72) 65%,
-      rgba(0, 0, 0, 0.82) 100%
-    ),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.86) 0%, rgba(0, 0, 0, 0.72) 65%, rgba(0, 0, 0, 0.82) 100%),
     url('https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=1100&q=80');
   background-size: cover;
   background-position: center;
@@ -278,7 +353,7 @@ onMounted(() => {
   left: 72px;
   top: 190px;
   z-index: 1;
-  max-width: 340px;
+  max-width: 350px;
 }
 
 .bf-left-kicker {
@@ -313,45 +388,80 @@ onMounted(() => {
 .bf-left-text {
   margin: 0;
   color: #f1ece6;
-  font-size: 1.24rem;
+  font-size: 1.2rem;
   line-height: 1.45;
 }
 
-.bf-login-right {
+.bf-left-list {
+  list-style: none;
+  padding: 0;
+  margin: 14px 0 0;
+  display: grid;
+  gap: 8px;
+}
+
+.bf-left-list li {
+  color: #f1ece6;
+  font-size: 1.06rem;
+  position: relative;
+  padding-left: 30px;
+}
+
+.bf-left-list li::before {
+  content: '\2713';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: rgba(243, 122, 30, 0.95);
+  color: #ffffff;
+  font-size: 0.85rem;
+  line-height: 20px;
+  text-align: center;
+}
+
+.bf-register-right {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: 54px 36px 28px;
+  padding: 38px 36px 28px;
 }
 
-.bf-login-panel {
-  width: min(100%, 660px);
+.bf-register-panel {
+  width: min(100%, 690px);
 }
 
-.bf-login-logo {
+.bf-register-logo {
   width: 188px;
   height: auto;
   display: block;
-  margin: 0 auto 16px;
+  margin: 0 auto 12px;
 }
 
-.bf-login-title {
+.bf-register-title {
   margin: 0;
   text-align: center;
   color: #2b1b13;
-  font-size: clamp(2.05rem, 3vw, 2.7rem);
-  line-height: 1.1;
+  font-size: clamp(2rem, 3vw, 2.7rem);
 }
 
-.bf-login-subtitle {
+.bf-register-subtitle {
   margin: 8px 0 0;
   text-align: center;
   color: #74685e;
   font-size: 1.18rem;
 }
 
-.bf-login-form {
-  margin-top: 24px;
+.bf-register-form {
+  margin-top: 20px;
+}
+
+.bf-row-two {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
 }
 
 .bf-field {
@@ -359,7 +469,7 @@ onMounted(() => {
 }
 
 .bf-field-block {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .bf-field-label {
@@ -371,24 +481,34 @@ onMounted(() => {
 }
 
 .bf-field :deep(.q-field__control) {
-  min-height: 62px;
+  min-height: 60px;
   border-radius: 12px;
   box-shadow: none !important;
+}
+
+.bf-field :deep(.q-field__label) {
+  display: none !important;
 }
 
 .bf-field :deep(.q-field__control-container) {
   padding-top: 0 !important;
 }
 
-.bf-field :deep(.q-field__shadow) {
-  display: none !important;
+.bf-field :deep(.q-field__native),
+.bf-field :deep(.q-field__input) {
+  padding-top: 0 !important;
+  align-self: center;
 }
 
-.bf-form-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin: 4px 0 16px;
+.bf-hint {
+  margin: -4px 0 12px;
+  color: #74685e;
+  font-size: 0.96rem;
+}
+
+.bf-terms {
+  margin-bottom: 12px;
+  color: #5f5147;
 }
 
 .bf-link-btn {
@@ -396,8 +516,9 @@ onMounted(() => {
   background: transparent;
   color: #ef761f;
   font-weight: 700;
-  font-size: 0.98rem;
+  font-size: 1rem;
   cursor: pointer;
+  padding: 0;
 }
 
 .bf-submit-btn {
@@ -414,7 +535,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 16px;
-  margin: 24px 0 18px;
+  margin: 22px 0 16px;
   color: #857a71;
 }
 
@@ -468,7 +589,7 @@ onMounted(() => {
   color: #1877f2;
 }
 
-.bf-create-wrap {
+.bf-login-wrap {
   margin-top: 28px;
   border: 1px solid #f0e2d3;
   border-radius: 14px;
@@ -481,12 +602,12 @@ onMounted(() => {
   color: #4f3e31;
 }
 
-.bf-create-wrap p {
+.bf-login-wrap p {
   margin: 0;
   font-size: 1.05rem;
 }
 
-.bf-create-btn {
+.bf-login-btn {
   border: 0;
   background: transparent;
   color: #ef761f;
@@ -499,7 +620,7 @@ onMounted(() => {
 }
 
 .bf-safe-note {
-  margin: 32px 0 0;
+  margin: 30px 0 0;
   color: #72665d;
   display: flex;
   align-items: center;
@@ -509,11 +630,11 @@ onMounted(() => {
 }
 
 @media (max-width: 1180px) {
-  .bf-login-shell {
+  .bf-register-shell {
     grid-template-columns: 1fr;
   }
 
-  .bf-login-left {
+  .bf-register-left {
     min-height: 320px;
     border-radius: 0;
   }
@@ -521,16 +642,16 @@ onMounted(() => {
   .bf-left-content {
     left: 24px;
     top: 56px;
-    max-width: 430px;
+    max-width: 460px;
   }
 
-  .bf-login-right {
+  .bf-register-right {
     padding-top: 26px;
   }
 }
 
 @media (max-width: 740px) {
-  .bf-login-right {
+  .bf-register-right {
     padding: 22px 12px 28px;
   }
 
@@ -547,10 +668,11 @@ onMounted(() => {
     font-size: 1.04rem;
   }
 
-  .bf-form-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
+  .bf-row-two {
+    grid-template-columns: 1fr;
+    gap: 0;
   }
 }
 </style>
+
+
