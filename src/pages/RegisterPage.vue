@@ -32,99 +32,95 @@
           <q-form class="bf-register-form" @submit.prevent="handleRegister">
             <div class="bf-row-two">
               <div class="bf-field-block">
-                <label class="bf-field-label">Nome completo</label>
-                <q-input
-                  v-model="name"
-                  outlined
-                  placeholder="Seu nome completo"
-                  hide-bottom-space
-                  class="bf-field"
-                >
-                  <template #prepend>
-                    <q-icon name="person" />
-                  </template>
-                </q-input>
+                <label class="bf-field-label" for="register-name">Nome completo</label>
+                <div class="bf-native-field">
+                  <q-icon name="person" class="bf-native-icon" />
+                  <input
+                    id="register-name"
+                    v-model="name"
+                    type="text"
+                    autocomplete="name"
+                    spellcheck="false"
+                    class="bf-native-input"
+                  />
+                </div>
               </div>
 
               <div class="bf-field-block">
-                <label class="bf-field-label">Telefone</label>
-                <q-input
-                  v-model="phone"
-                  outlined
-                  mask="(##) #####-####"
-                  fill-mask
-                  placeholder="(11) 98765-4321"
-                  hide-bottom-space
-                  class="bf-field"
-                >
-                  <template #prepend>
-                    <q-icon name="call" />
-                  </template>
-                </q-input>
+                <label class="bf-field-label" for="register-phone">Telefone</label>
+                <div class="bf-native-field">
+                  <q-icon name="call" class="bf-native-icon" />
+                  <input
+                    id="register-phone"
+                    v-model="phone"
+                    type="tel"
+                    autocomplete="tel"
+                    inputmode="numeric"
+                    @input="handlePhoneInput"
+                    class="bf-native-input"
+                  />
+                </div>
               </div>
             </div>
 
             <div class="bf-field-block">
-              <label class="bf-field-label">E-mail</label>
-              <q-input
-                v-model="email"
-                outlined
-                type="email"
-                placeholder="seu@email.com"
-                hide-bottom-space
-                class="bf-field"
-              >
-                <template #prepend>
-                  <q-icon name="mail" />
-                </template>
-              </q-input>
+              <label class="bf-field-label" for="register-email">E-mail</label>
+              <div class="bf-native-field">
+                <q-icon name="mail" class="bf-native-icon" />
+                <input
+                  id="register-email"
+                  v-model="email"
+                  type="email"
+                  autocomplete="email"
+                  spellcheck="false"
+                  class="bf-native-input"
+                />
+              </div>
             </div>
 
             <div class="bf-field-block">
-              <label class="bf-field-label">Senha</label>
-              <q-input
-                v-model="password"
-                outlined
-                :type="showPassword ? 'text' : 'password'"
-                placeholder="********"
-                hide-bottom-space
-                class="bf-field"
-              >
-                <template #prepend>
-                  <q-icon name="lock" />
-                </template>
-                <template #append>
-                  <q-icon
-                    :name="showPassword ? 'visibility_off' : 'visibility'"
-                    class="cursor-pointer"
-                    @click="showPassword = !showPassword"
-                  />
-                </template>
-              </q-input>
+              <label class="bf-field-label" for="register-password">Senha</label>
+              <div class="bf-native-field">
+                <q-icon name="lock" class="bf-native-icon" />
+                <input
+                  id="register-password"
+                  v-model="password"
+                  :type="showPassword ? 'text' : 'password'"
+                  autocomplete="new-password"
+                  class="bf-native-input"
+                />
+                <button
+                  type="button"
+                  class="bf-native-toggle"
+                  :aria-label="showPassword ? 'Ocultar senha' : 'Mostrar senha'"
+                  @click="showPassword = !showPassword"
+                >
+                  <q-icon :name="showPassword ? 'visibility_off' : 'visibility'" />
+                </button>
+              </div>
             </div>
             <p class="bf-hint">Minimo de 6 caracteres</p>
 
             <div class="bf-field-block">
-              <label class="bf-field-label">Confirmar senha</label>
-              <q-input
-                v-model="confirmPassword"
-                outlined
-                :type="showConfirmPassword ? 'text' : 'password'"
-                placeholder="********"
-                hide-bottom-space
-                class="bf-field"
-              >
-                <template #prepend>
-                  <q-icon name="lock" />
-                </template>
-                <template #append>
-                  <q-icon
-                    :name="showConfirmPassword ? 'visibility_off' : 'visibility'"
-                    class="cursor-pointer"
-                    @click="showConfirmPassword = !showConfirmPassword"
-                  />
-                </template>
-              </q-input>
+              <label class="bf-field-label" for="register-confirm-password">Confirmar senha</label>
+              <div class="bf-native-field">
+                <q-icon name="lock" class="bf-native-icon" />
+                <input
+                  id="register-confirm-password"
+                  v-model="confirmPassword"
+                  :type="showConfirmPassword ? 'text' : 'password'"
+                  autocomplete="new-password"
+                  class="bf-native-input"
+                />
+                <button
+                  type="button"
+                  class="bf-native-toggle"
+                  :aria-label="showConfirmPassword ? 'Ocultar senha' : 'Mostrar senha'"
+                  @click="showConfirmPassword = !showConfirmPassword"
+                >
+                  <q-icon :name="showConfirmPassword ? 'visibility_off' : 'visibility'" />
+                </button>
+              </div>
             </div>
 
             <q-checkbox
@@ -249,6 +245,32 @@ function handleSocial(provider) {
 
 function goLogin() {
   router.push('/login')
+}
+
+function handlePhoneInput(event) {
+  const digitsOnly = String(event?.target?.value || '')
+    .replace(/\D/g, '')
+    .slice(0, 11)
+
+  if (digitsOnly.length <= 2) {
+    phone.value = digitsOnly
+    return
+  }
+
+  const ddd = digitsOnly.slice(0, 2)
+  const rest = digitsOnly.slice(2)
+
+  if (rest.length <= 4) {
+    phone.value = `(${ddd}) ${rest}`
+    return
+  }
+
+  if (rest.length <= 8) {
+    phone.value = `(${ddd}) ${rest.slice(0, 4)}-${rest.slice(4)}`
+    return
+  }
+
+  phone.value = `(${ddd}) ${rest.slice(0, 5)}-${rest.slice(5, 9)}`
 }
 
 async function handleRegister() {
@@ -468,6 +490,50 @@ async function handleRegister() {
   margin-bottom: 0;
 }
 
+.bf-native-field {
+  display: flex;
+  align-items: center;
+  min-height: 60px;
+  border: 1px solid #d8c9b8;
+  border-radius: 12px;
+  background: #ffffff;
+  padding: 0 12px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.bf-native-field:focus-within {
+  border-color: #d6461c;
+  box-shadow: 0 0 0 1px #d6461c inset;
+}
+
+.bf-native-icon {
+  color: #7d746d;
+  font-size: 20px;
+  margin-right: 8px;
+}
+
+.bf-native-input {
+  flex: 1;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #2b1b13;
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+.bf-native-toggle {
+  border: 0;
+  background: transparent;
+  color: #7d746d;
+  padding: 0;
+  margin-left: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
 .bf-field-block {
   margin-bottom: 12px;
 }
@@ -498,6 +564,10 @@ async function handleRegister() {
 .bf-field :deep(.q-field__input) {
   padding-top: 0 !important;
   align-self: center;
+}
+
+.bf-field :deep(.q-field__shadow) {
+  display: none !important;
 }
 
 .bf-hint {
