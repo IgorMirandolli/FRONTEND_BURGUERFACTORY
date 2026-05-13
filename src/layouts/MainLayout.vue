@@ -22,7 +22,6 @@
           </q-btn>
 
           <q-btn
-            v-if="isLoggedIn"
             flat
             round
             icon="account_circle"
@@ -36,19 +35,30 @@
               no-parent-event
             >
               <q-list style="min-width: 220px">
-                <q-item>
+                <q-item v-if="isLoggedIn">
                   <q-item-section>
                     <q-item-label class="text-weight-bold">{{ userLabel }}</q-item-label>
                     <q-item-label caption>{{ userEmail }}</q-item-label>
                   </q-item-section>
                 </q-item>
-                <q-separator />
-                <q-item clickable v-close-popup @click="logout">
+
+                <q-separator v-if="isLoggedIn" />
+
+                <q-item v-if="isLoggedIn" clickable v-close-popup @click="logout">
                   <q-item-section avatar>
                     <q-icon name="logout" />
                   </q-item-section>
                   <q-item-section>
                     <q-item-label>Sair</q-item-label>
+                  </q-item-section>
+                </q-item>
+
+                <q-item v-else clickable v-close-popup @click="goLogin">
+                  <q-item-section avatar>
+                    <q-icon name="login" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label>Fazer login</q-item-label>
                   </q-item-section>
                 </q-item>
               </q-list>
@@ -198,6 +208,11 @@ function goAbout() {
 
 function goOrders() {
   router.push('/pedidos')
+}
+
+function goLogin() {
+  profileMenuOpen.value = false
+  router.push('/login')
 }
 
 function toggleProfileMenu() {
