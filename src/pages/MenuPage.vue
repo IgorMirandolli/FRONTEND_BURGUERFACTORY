@@ -99,7 +99,6 @@
           <article v-for="item in visibleItems" :key="item.id" class="bf-featured-card">
             <div class="bf-featured-image-wrap">
               <img :src="resolveImageUrl(item.imageUrl)" :alt="item.name" class="bf-featured-image" />
-              <span class="bf-featured-badge">2x</span>
             </div>
 
             <div class="bf-featured-body">
