@@ -30,12 +30,13 @@
             <div class="bf-fields bf-two-cols">
               <q-input v-model="form.customer_name" outlined dense label="Nome completo" class="bf-input" />
               <q-input
-                v-model="form.customer_phone"
+                :model-value="form.customer_phone"
                 outlined
                 dense
                 label="Numero de telefone"
-                mask="(##) #####-####"
-                fill-mask
+                type="tel"
+                inputmode="numeric"
+                @update:model-value="updateCustomerPhone"
                 class="bf-input"
               />
             </div>
@@ -297,6 +298,71 @@ function getCartContext() {
   return { headers, isAuth, sessionId, user: session.user || null }
 }
 
+function formatPhoneForDisplay(rawValue) {
+  const digits = String(rawValue || '')
+    .replace(/\D/g, '')
+    .slice(0, 11)
+
+  if (digits.length === 0) return ''
+  if (digits.length <= 2) return digits
+
+  const ddd = digits.slice(0, 2)
+  const rest = digits.slice(2)
+
+  if (rest.length <= 4) return `(${ddd}) ${rest}`
+  if (rest.length <= 8) return `(${ddd}) ${rest.slice(0, 4)}-${rest.slice(4)}`
+
+  return `(${ddd}) ${rest.slice(0, 5)}-${rest.slice(5, 9)}`
+}
+
+function updateCustomerPhone(value) {
+  form.value.customer_phone = formatPhoneForDisplay(value)
+}
+
+async function hydrateLoggedUserProfile(headers, sessionUser) {
+  if (sessionUser?.name) {
+    form.value.customer_name = sessionUser.name
+  }
+
+  const sessionPhone = sessionUser?.fone || sessionUser?.phone
+  if (sessionPhone) {
+    updateCustomerPhone(sessionPhone)
+  }
+
+  if (!headers.Authorization) return
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/auth/verify`, { headers })
+    const data = await response.json()
+
+    if (!response.ok || !data?.user) return
+
+    const user = data.user
+    if (user.name) {
+      form.value.customer_name = user.name
+    }
+
+    const profilePhone = user.fone || user.phone
+    if (profilePhone) {
+      updateCustomerPhone(profilePhone)
+    }
+
+    const session = JSON.parse(localStorage.getItem('bf_session') || '{}')
+    localStorage.setItem(
+      'bf_session',
+      JSON.stringify({
+        ...session,
+        user: {
+          ...(session.user || {}),
+          ...user,
+        },
+      })
+    )
+  } catch {
+    // If profile hydration fails, we keep checkout flow working with current session data.
+  }
+}
+
 function paymentMethodToBackend() {
   if (selectedPaymentMethod.value === 'pix') return 'app_pix'
   if (selectedPaymentMethod.value === 'card') return 'delivery_card_credit'
@@ -327,9 +393,7 @@ async function loadCart() {
       url += `?session_id=${encodeURIComponent(sessionId)}`
     }
 
-    if (user?.name) {
-      form.value.customer_name = user.name
-    }
+    await hydrateLoggedUserProfile(headers, user)
 
     const response = await fetch(url, { headers })
     const data = await response.json()
@@ -423,16 +487,16 @@ onMounted(() => {
 }
 
 .bf-checkout-shell {
-  max-width: 1360px;
+  max-width: 1540px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 16px 0 4px;
 }
 
 .bf-back-link {
   border: 0;
   background: transparent;
   color: #ed761f;
-  font-size: 1.05rem;
+  font-size: 1.12rem;
   font-weight: 700;
   display: inline-flex;
   align-items: center;
@@ -456,39 +520,39 @@ onMounted(() => {
 .bf-page-subtitle {
   margin: 10px 0 0;
   color: #67594d;
-  font-size: 1.08rem;
+  font-size: 1.18rem;
 }
 
 .bf-checkout-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.75fr) minmax(360px, 0.95fr);
-  gap: 18px;
+  grid-template-columns: minmax(0, 2.15fr) minmax(320px, 0.75fr);
+  gap: 20px;
   align-items: start;
 }
 
 .bf-checkout-main {
   display: grid;
-  gap: 14px;
+  gap: 16px;
 }
 
 .bf-block {
   border: 1px solid #f0e2d3;
   border-radius: 14px;
   background: #ffffff;
-  padding: 12px;
+  padding: 16px 14px;
 }
 
 .bf-block-head {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .bf-block-head h2 {
   margin: 0;
   color: #1f140f;
-  font-size: 1.95rem;
+  font-size: 2.08rem;
 }
 
 .bf-step {
@@ -506,7 +570,7 @@ onMounted(() => {
 
 .bf-fields {
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 
 .bf-two-cols {
@@ -514,12 +578,12 @@ onMounted(() => {
 }
 
 .bf-three-cols {
-  margin-top: 10px;
+  margin-top: 12px;
   grid-template-columns: 0.95fr 1fr 0.95fr;
 }
 
 .bf-two-cols-city {
-  margin-top: 10px;
+  margin-top: 12px;
   grid-template-columns: 2fr 0.9fr;
 }
 
@@ -528,21 +592,31 @@ onMounted(() => {
   background: #ffffff;
 }
 
+.bf-input :deep(.q-field__native),
+.bf-input :deep(.q-field__input) {
+  font-size: 1.08rem;
+}
+
+.bf-input :deep(.q-field__label) {
+  font-size: 1.08rem;
+  line-height: 1.2;
+}
+
 .bf-payment-list {
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 
 .bf-payment-item {
   border: 1px solid #f0dfcd;
   border-radius: 10px;
   background: #ffffff;
-  min-height: 68px;
+  min-height: 76px;
   display: grid;
   grid-template-columns: 26px 28px 1fr auto;
   align-items: center;
   gap: 12px;
-  padding: 12px;
+  padding: 14px 12px;
   cursor: pointer;
 }
 
@@ -586,27 +660,27 @@ onMounted(() => {
 
 .bf-payment-text strong {
   color: #2b1b13;
-  font-size: 1.05rem;
+  font-size: 1.13rem;
   line-height: 1.1;
 }
 
 .bf-payment-text small {
   color: #6d5f54;
   margin-top: 2px;
-  font-size: 0.94rem;
+  font-size: 1.02rem;
 }
 
 .bf-payment-badge {
   border-radius: 999px;
   background: #d9f0d8;
   color: #2e7d32;
-  font-size: 0.82rem;
+  font-size: 0.88rem;
   font-weight: 600;
   padding: 5px 10px;
 }
 
 .bf-notes-input :deep(textarea) {
-  min-height: 72px;
+  min-height: 96px;
 }
 
 .bf-summary-wrap {
@@ -671,21 +745,21 @@ onMounted(() => {
 
 .bf-summary-info h3 {
   margin: 4px 0 4px;
-  font-size: 1.12rem;
+  font-size: 1.22rem;
   color: #2a1a13;
 }
 
 .bf-summary-info p {
   margin: 0;
   color: #695c50;
-  font-size: 0.96rem;
+  font-size: 1.05rem;
   line-height: 1.4;
 }
 
 .bf-summary-price {
   margin-top: 8px;
   color: #2a1a13;
-  font-size: 1.02rem;
+  font-size: 1.12rem;
   white-space: nowrap;
 }
 
@@ -702,6 +776,7 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   color: #39271d;
+  font-size: 1.08rem;
 }
 
 .bf-total-final {
@@ -737,13 +812,13 @@ onMounted(() => {
 .bf-extra-box strong {
   display: block;
   color: #2f1d14;
-  font-size: 1.03rem;
+  font-size: 1.12rem;
 }
 
 .bf-extra-box p {
   margin: 3px 0 0;
   color: #6c5f54;
-  font-size: 0.95rem;
+  font-size: 1.03rem;
   line-height: 1.4;
 }
 
@@ -754,7 +829,7 @@ onMounted(() => {
   border-radius: 10px;
   background: linear-gradient(90deg, #ef7b20 0%, #f56c00 100%);
   color: #ffffff;
-  font-size: 1.05rem;
+  font-size: 1.14rem;
   font-weight: 700;
 }
 
@@ -765,6 +840,7 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   gap: 8px;
+  font-size: 1.04rem;
 }
 
 @media (max-width: 1120px) {
