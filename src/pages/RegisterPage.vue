@@ -310,6 +310,7 @@ async function handleRegister() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         name: name.value,
+        fone: phone.value,
         email: email.value,
         password: password.value,
       }),
