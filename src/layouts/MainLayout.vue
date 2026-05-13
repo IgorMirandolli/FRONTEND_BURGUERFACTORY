@@ -384,6 +384,10 @@ function logout() {
 onMounted(() => {
   loadSessionData()
   window.addEventListener('bf-cart-updated', handleCartUpdated)
+
+  if (!isLoginPage.value) {
+    loadCart({ silent: true })
+  }
 })
 
 watch(
@@ -391,6 +395,10 @@ watch(
   () => {
     loadSessionData()
     profileMenuOpen.value = false
+
+    if (!isLoginPage.value) {
+      loadCart({ silent: true })
+    }
   }
 )
 
@@ -484,6 +492,10 @@ onBeforeUnmount(() => {
 
 .bf-icon-btn {
   color: #211812;
+}
+
+.bf-icon-btn :deep(.q-btn__content .q-icon) {
+  font-size: 37px;
 }
 
 .bf-cart-badge {
