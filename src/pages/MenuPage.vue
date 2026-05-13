@@ -310,7 +310,9 @@ onMounted(() => {
 }
 
 .bf-hero-content {
-  padding: 84px 22px 54px 0;
+  padding: 84px 22px 54px 22px;
+  background: #ffffff;
+  border-left: 1px solid #eee2d2;
 }
 
 .bf-hero-badge {
@@ -638,7 +640,7 @@ onMounted(() => {
   }
 
   .bf-hero-content {
-    padding: 26px 4px 14px;
+    padding: 26px 12px 14px;
   }
 
   .bf-hero-title {
