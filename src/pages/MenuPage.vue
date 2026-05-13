@@ -208,7 +208,27 @@ function scrollToMenu() {
 
 function setActiveCategory(categoryKey) {
   activeCategory.value = categoryKey
-  scrollToMenu()
+
+  const menuElement = document.getElementById('menu')
+  if (!menuElement) return
+
+  const distanceFromTop = Math.abs(menuElement.getBoundingClientRect().top)
+  if (distanceFromTop > 140) {
+    scrollToMenu()
+  }
+}
+
+function preloadMenuImages(items) {
+  const uniqueUrls = new Set(
+    (items || [])
+      .map((item) => resolveImageUrl(item.imageUrl))
+      .filter(Boolean)
+  )
+
+  uniqueUrls.forEach((url) => {
+    const image = new Image()
+    image.src = url
+  })
 }
 
 function getOrCreateGuestSessionId() {
@@ -275,6 +295,7 @@ async function loadMenu() {
     }
 
     menuItems.value = data.items || []
+    preloadMenuImages(menuItems.value)
   } catch {
     errorMessage.value = 'Erro de conexao com servidor.'
   } finally {
