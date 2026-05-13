@@ -410,10 +410,10 @@ onBeforeUnmount(() => {
 }
 
 .bf-header-bar {
-  max-width: 1360px;
+  max-width: 1640px;
   margin: 0 auto;
   height: 90px;
-  padding: 0 24px;
+  padding: 0 16px;
   display: grid;
   grid-template-columns: 300px 1fr 180px;
   align-items: center;

@@ -1,95 +1,129 @@
 <template>
-  <q-page class="login-page flex flex-center">
-    <div class="login-glow" aria-hidden="true"></div>
-
-    <q-card class="login-card">
-      <q-card-section class="text-center q-pb-sm">
-        <img :src="logo" alt="Burger Factory" class="login-logo q-mb-sm" />
-        <div class="text-overline text-weight-bold brand-overline">Burger Factory</div>
-        <div class="login-title q-mt-xs">{{ isRegisterMode ? 'Criar conta' : 'Entrar' }}</div>
-        <div class="login-subtitle q-mt-sm">
-          {{
-            isRegisterMode
-              ? 'Preencha os dados para criar sua conta e continuar.'
-              : 'Acesse sua conta para acompanhar pedidos ou continue sem cadastro.'
-          }}
+  <q-page class="bf-login-page">
+    <div class="bf-login-shell">
+      <aside class="bf-login-left" aria-hidden="true">
+        <div class="bf-left-overlay"></div>
+        <div class="bf-left-content">
+          <p class="bf-left-kicker">BEM-VINDO A</p>
+          <h1 class="bf-left-title">
+            BURGER
+            <span>FACTORY</span>
+          </h1>
+          <div class="bf-left-line"></div>
+          <p class="bf-left-text">
+            Faca login para acompanhar
+            seus pedidos, salvar favoritos
+            e muito mais.
+          </p>
         </div>
-      </q-card-section>
+      </aside>
 
-      <q-form @submit.prevent="submitAuth">
-        <q-card-section>
-        <q-input v-if="isRegisterMode" v-model="name" label="Nome" outlined dense class="q-mb-md" />
-        <q-input v-model="email" label="E-mail" outlined dense type="email" class="q-mb-md" />
-        <q-input
-          v-model="password"
-          label="Senha"
-          outlined
-          dense
-          :type="showPassword ? 'text' : 'password'"
-          :class="isRegisterMode ? 'q-mb-md' : ''"
-        >
-          <template #append>
-            <q-icon
-              :name="showPassword ? 'visibility_off' : 'visibility'"
-              class="cursor-pointer"
-              @click="showPassword = !showPassword"
+      <section class="bf-login-right">
+        <div class="bf-login-panel">
+          <img :src="logo" alt="Burger Factory" class="bf-login-logo" />
+
+          <h2 class="bf-login-title">Entrar na sua conta</h2>
+          <p class="bf-login-subtitle">Que bom ter voce de volta!</p>
+
+          <q-form class="bf-login-form" @submit.prevent="handleLogin">
+            <q-input
+              v-model="email"
+              outlined
+              dense
+              type="email"
+              label="E-mail"
+              placeholder="seu@email.com"
+              class="bf-field"
+            >
+              <template #prepend>
+                <q-icon name="mail" />
+              </template>
+            </q-input>
+
+            <q-input
+              v-model="password"
+              outlined
+              dense
+              :type="showPassword ? 'text' : 'password'"
+              label="Senha"
+              placeholder="********"
+              class="bf-field"
+            >
+              <template #prepend>
+                <q-icon name="lock" />
+              </template>
+              <template #append>
+                <q-icon
+                  :name="showPassword ? 'visibility_off' : 'visibility'"
+                  class="cursor-pointer"
+                  @click="showPassword = !showPassword"
+                />
+              </template>
+            </q-input>
+
+            <div class="bf-form-row">
+              <q-checkbox v-model="rememberMe" label="Lembrar-me" color="deep-orange-8" />
+              <button type="button" class="bf-link-btn" @click="handleForgotPassword">
+                Esqueci minha senha
+              </button>
+            </div>
+
+            <q-banner v-if="errorMessage" class="bg-red-1 text-red-9 rounded-borders q-mb-sm">
+              {{ errorMessage }}
+            </q-banner>
+
+            <q-banner v-if="infoMessage" class="bg-orange-1 text-orange-9 rounded-borders q-mb-sm">
+              {{ infoMessage }}
+            </q-banner>
+
+            <q-btn
+              type="submit"
+              no-caps
+              unelevated
+              class="bf-submit-btn"
+              label="Entrar"
+              :loading="loading"
             />
-          </template>
-        </q-input>
+          </q-form>
 
-        <q-input
-          v-if="isRegisterMode"
-          v-model="confirmPassword"
-          label="Confirmar senha"
-          outlined
-          dense
-          :type="showPassword ? 'text' : 'password'"
-        />
+          <div class="bf-divider">
+            <span>ou</span>
+          </div>
 
-        <q-banner v-if="errorMessage" inline-actions class="bg-red-1 text-red-9 q-mt-md rounded-borders">
-          {{ errorMessage }}
-        </q-banner>
-        </q-card-section>
+          <button type="button" class="bf-social-btn" @click="handleSocial('Google')">
+            <span class="bf-social-icon google">G</span>
+            <span>Continuar com Google</span>
+          </button>
 
-        <q-card-actions vertical class="q-pa-md q-pt-none">
-        <q-btn
-          :label="isRegisterMode ? 'Criar conta' : 'Entrar'"
-          color="dark"
-          unelevated
-          no-caps
-          type="submit"
-          :loading="loading"
-        />
-        <q-btn
-          :label="isRegisterMode ? 'Ja tenho conta' : 'Nao tenho conta (Registrar-se)'"
-          color="dark"
-          flat
-          no-caps
-          :disable="loading"
-          @click="toggleMode"
-        />
-        <q-btn
-          v-if="!isRegisterMode"
-          label="Entrar sem conta"
-          color="orange-8"
-          flat
-          no-caps
-          :disable="loading"
-          @click="handleGuest"
-        />
-        </q-card-actions>
-      </q-form>
-    </q-card>
+          <button type="button" class="bf-social-btn" @click="handleSocial('Facebook')">
+            <span class="bf-social-icon facebook">f</span>
+            <span>Continuar com Facebook</span>
+          </button>
+
+          <div class="bf-create-wrap">
+            <p>Ainda nao tem uma conta?</p>
+            <button type="button" class="bf-create-btn" @click="handleCreateAccount">
+              Criar conta
+              <q-icon name="arrow_forward" size="18px" />
+            </button>
+          </div>
+
+          <p class="bf-safe-note">
+            <q-icon name="verified_user" size="18px" />
+            Seus dados estao protegidos com a gente.
+          </p>
+        </div>
+      </section>
+    </div>
   </q-page>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import logo from 'src/assets/logoburguerfactory.png'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
-
 const router = useRouter()
 
 const ALLOWED_EMAIL_DOMAINS = new Set([
@@ -102,14 +136,13 @@ const ALLOWED_EMAIL_DOMAINS = new Set([
   'yahoo.com.br',
 ])
 
-const name = ref('')
 const email = ref('')
 const password = ref('')
-const confirmPassword = ref('')
 const showPassword = ref(false)
+const rememberMe = ref(false)
 const loading = ref(false)
 const errorMessage = ref('')
-const isRegisterMode = ref(false)
+const infoMessage = ref('')
 
 function isValidEmail(rawEmail) {
   if (!rawEmail || rawEmail.includes(' ')) return false
@@ -123,20 +156,24 @@ function isValidEmail(rawEmail) {
 }
 
 function providerMessage() {
-  return 'Use um email de provedor permitido: gmail, outlook, hotmail, live, icloud ou yahoo.'
+  return 'Use um email valido: gmail, outlook, hotmail, live, icloud ou yahoo.'
 }
 
-function submitAuth() {
-  if (isRegisterMode.value) {
-    handleRegister()
-    return
-  }
+function handleForgotPassword() {
+  infoMessage.value = 'Recuperacao de senha em breve.'
+}
 
-  handleLogin()
+function handleSocial(provider) {
+  infoMessage.value = `Login com ${provider} em breve.`
+}
+
+function handleCreateAccount() {
+  infoMessage.value = 'Cadastro em breve.'
 }
 
 async function handleLogin() {
   errorMessage.value = ''
+  infoMessage.value = ''
 
   if (!email.value || !password.value) {
     errorMessage.value = 'Preencha e-mail e senha.'
@@ -176,61 +213,12 @@ async function handleLogin() {
       })
     )
 
-    router.push('/lanches')
-  } catch {
-    errorMessage.value = 'Erro de conexao com servidor.'
-  } finally {
-    loading.value = false
-  }
-}
-
-async function handleRegister() {
-  errorMessage.value = ''
-
-  if (!name.value || !email.value || !password.value || !confirmPassword.value) {
-    errorMessage.value = 'Preencha nome, e-mail, senha e confirmacao de senha.'
-    return
-  }
-
-  if (!isValidEmail(email.value)) {
-    errorMessage.value = providerMessage()
-    return
-  }
-
-  if (password.value !== confirmPassword.value) {
-    errorMessage.value = 'As senhas nao coincidem.'
-    return
-  }
-
-  loading.value = true
-
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: name.value,
-        email: email.value,
-        password: password.value,
-      }),
-    })
-
-    const data = await response.json()
-
-    if (!response.ok) {
-      errorMessage.value = data.message || 'Nao foi possivel criar conta.'
-      return
+    if (rememberMe.value) {
+      localStorage.setItem('bf_remember_email', email.value)
+    } else {
+      localStorage.removeItem('bf_remember_email')
     }
 
-    localStorage.setItem(
-      'bf_session',
-      JSON.stringify({
-        mode: 'auth',
-        token: data.token,
-        user: data.user,
-      })
-    )
-
     router.push('/lanches')
   } catch {
     errorMessage.value = 'Erro de conexao com servidor.'
@@ -239,22 +227,306 @@ async function handleRegister() {
   }
 }
 
-function toggleMode() {
-  isRegisterMode.value = !isRegisterMode.value
-  errorMessage.value = ''
-  confirmPassword.value = ''
-}
-
-function handleGuest() {
-  localStorage.setItem(
-    'bf_session',
-    JSON.stringify({
-      mode: 'guest',
-      token: null,
-      user: null,
-    })
-  )
-
-  router.push('/lanches')
-}
+onMounted(() => {
+  const rememberedEmail = localStorage.getItem('bf_remember_email')
+  if (rememberedEmail) {
+    email.value = rememberedEmail
+    rememberMe.value = true
+  }
+})
 </script>
+
+<style scoped>
+.bf-login-page {
+  min-height: 100vh;
+  background: #fffdf8;
+}
+
+.bf-login-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(360px, 40%) 1fr;
+}
+
+.bf-login-left {
+  position: relative;
+  background-image:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.86) 0%, rgba(0, 0, 0, 0.72) 65%, rgba(0, 0, 0, 0.82) 100%),
+    url('https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=1100&q=80');
+  background-size: cover;
+  background-position: center;
+  border-top-right-radius: 46px;
+  border-bottom-right-radius: 46px;
+  overflow: hidden;
+}
+
+.bf-left-overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 15% 30%, rgba(244, 117, 27, 0.16) 0%, rgba(0, 0, 0, 0) 42%);
+}
+
+.bf-left-content {
+  position: absolute;
+  left: 72px;
+  top: 190px;
+  z-index: 1;
+  max-width: 340px;
+}
+
+.bf-left-kicker {
+  margin: 0;
+  color: #f28b2b;
+  letter-spacing: 0.12em;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.bf-left-title {
+  margin: 18px 0 0;
+  color: #ffffff;
+  font-size: clamp(3.1rem, 5vw, 5.2rem);
+  line-height: 0.95;
+  font-weight: 800;
+}
+
+.bf-left-title span {
+  display: block;
+  color: #f37a1e;
+}
+
+.bf-left-line {
+  width: 78px;
+  height: 3px;
+  border-radius: 999px;
+  background: #f37a1e;
+  margin: 24px 0;
+}
+
+.bf-left-text {
+  margin: 0;
+  color: #f1ece6;
+  font-size: 1.24rem;
+  line-height: 1.45;
+}
+
+.bf-login-right {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 54px 36px 28px;
+}
+
+.bf-login-panel {
+  width: min(100%, 660px);
+}
+
+.bf-login-logo {
+  width: 188px;
+  height: auto;
+  display: block;
+  margin: 0 auto 16px;
+}
+
+.bf-login-title {
+  margin: 0;
+  text-align: center;
+  color: #2b1b13;
+  font-size: clamp(2.05rem, 3vw, 2.7rem);
+  line-height: 1.1;
+}
+
+.bf-login-subtitle {
+  margin: 8px 0 0;
+  text-align: center;
+  color: #74685e;
+  font-size: 1.18rem;
+}
+
+.bf-login-form {
+  margin-top: 24px;
+}
+
+.bf-field {
+  margin-bottom: 16px;
+}
+
+.bf-field :deep(.q-field__control) {
+  min-height: 62px;
+  border-radius: 12px;
+}
+
+.bf-field :deep(.q-field__label) {
+  font-size: 1rem;
+}
+
+.bf-form-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 4px 0 16px;
+}
+
+.bf-link-btn {
+  border: 0;
+  background: transparent;
+  color: #ef761f;
+  font-weight: 700;
+  font-size: 0.98rem;
+  cursor: pointer;
+}
+
+.bf-submit-btn {
+  width: 100%;
+  height: 62px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #f07a1f 0%, #f46900 100%);
+  color: #ffffff;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.bf-divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 24px 0 18px;
+  color: #857a71;
+}
+
+.bf-divider::before,
+.bf-divider::after {
+  content: '';
+  height: 1px;
+  flex: 1;
+  background: #e6d9cb;
+}
+
+.bf-divider span {
+  font-weight: 600;
+}
+
+.bf-social-btn {
+  width: 100%;
+  min-height: 58px;
+  border: 1px solid #eadccd;
+  border-radius: 12px;
+  background: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 1.06rem;
+  color: #2e2018;
+  cursor: pointer;
+}
+
+.bf-social-btn + .bf-social-btn {
+  margin-top: 12px;
+}
+
+.bf-social-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.bf-social-icon.google {
+  color: #db4437;
+}
+
+.bf-social-icon.facebook {
+  color: #1877f2;
+}
+
+.bf-create-wrap {
+  margin-top: 28px;
+  border: 1px solid #f0e2d3;
+  border-radius: 14px;
+  min-height: 118px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #4f3e31;
+}
+
+.bf-create-wrap p {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.bf-create-btn {
+  border: 0;
+  background: transparent;
+  color: #ef761f;
+  font-weight: 700;
+  font-size: 1.12rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.bf-safe-note {
+  margin: 32px 0 0;
+  color: #72665d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.98rem;
+}
+
+@media (max-width: 1180px) {
+  .bf-login-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .bf-login-left {
+    min-height: 320px;
+    border-radius: 0;
+  }
+
+  .bf-left-content {
+    left: 24px;
+    top: 56px;
+    max-width: 430px;
+  }
+
+  .bf-login-right {
+    padding-top: 26px;
+  }
+}
+
+@media (max-width: 740px) {
+  .bf-login-right {
+    padding: 22px 12px 28px;
+  }
+
+  .bf-left-content {
+    left: 16px;
+    top: 34px;
+  }
+
+  .bf-left-title {
+    font-size: clamp(2.3rem, 10vw, 3.2rem);
+  }
+
+  .bf-left-text {
+    font-size: 1.04rem;
+  }
+
+  .bf-form-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}
+</style>

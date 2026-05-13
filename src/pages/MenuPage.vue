@@ -295,9 +295,9 @@ onMounted(() => {
 }
 
 .bf-shell {
-  max-width: 1360px;
+  max-width: 1640px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 16px;
 }
 
 .bf-hero {
@@ -527,7 +527,7 @@ onMounted(() => {
 .bf-featured-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
+  gap: 20px;
 }
 
 .bf-featured-card {
@@ -535,7 +535,7 @@ onMounted(() => {
   border-radius: 16px;
   background: #ffffff;
   display: grid;
-  grid-template-columns: 184px 1fr;
+  grid-template-columns: 210px 1fr;
   overflow: hidden;
 }
 
@@ -546,7 +546,7 @@ onMounted(() => {
 
 .bf-featured-image {
   width: 100%;
-  height: 162px;
+  height: 174px;
   border-radius: 12px;
   object-fit: cover;
 }
