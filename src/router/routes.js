@@ -10,6 +10,7 @@ const routes = [
       { path: 'checkout', component: () => import('pages/CheckoutPage.vue') },
       { path: 'pedidos', component: () => import('pages/OrdersPage.vue') },
       { path: 'pedidos/:orderId', component: () => import('pages/OrderStatusPage.vue') },
+      { path: 'perfil', component: () => import('pages/ProfilePage.vue') },
     ],
   },
 

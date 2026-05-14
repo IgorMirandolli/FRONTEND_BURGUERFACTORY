@@ -23,28 +23,31 @@
 
           <q-btn
             flat
-            round
-            icon="account_circle"
-            class="bf-icon-btn"
+            no-caps
+            class="bf-profile-trigger"
             @click.stop="toggleProfileMenu"
           >
+            <q-icon name="account_circle" class="bf-profile-trigger-icon" />
+            <span class="bf-profile-trigger-label">{{ profileTriggerLabel }}</span>
+            <q-icon name="expand_more" size="20px" class="bf-profile-trigger-caret" />
+
             <q-menu
               v-model="profileMenuOpen"
               anchor="bottom right"
               self="top right"
               no-parent-event
             >
-              <q-list style="min-width: 220px">
-                <q-item v-if="isLoggedIn">
+              <q-list class="bf-profile-menu-list">
+                <q-item v-if="isLoggedIn" clickable v-close-popup class="bf-profile-menu-item" @click="goProfile">
+                  <q-item-section avatar>
+                    <q-icon name="person_outline" />
+                  </q-item-section>
                   <q-item-section>
-                    <q-item-label class="text-weight-bold">{{ userLabel }}</q-item-label>
-                    <q-item-label caption>{{ userEmail }}</q-item-label>
+                    <q-item-label>Meu perfil</q-item-label>
                   </q-item-section>
                 </q-item>
 
-                <q-separator v-if="isLoggedIn" />
-
-                <q-item v-if="isLoggedIn" clickable v-close-popup @click="logout">
+                <q-item v-if="isLoggedIn" clickable v-close-popup class="bf-profile-menu-item" @click="logout">
                   <q-item-section avatar>
                     <q-icon name="logout" />
                   </q-item-section>
@@ -53,7 +56,7 @@
                   </q-item-section>
                 </q-item>
 
-                <q-item v-else clickable v-close-popup @click="goLogin">
+                <q-item v-else clickable v-close-popup class="bf-profile-menu-item" @click="goLogin">
                   <q-item-section avatar>
                     <q-icon name="login" />
                   </q-item-section>
@@ -186,11 +189,13 @@ const profileMenuOpen = ref(false)
 
 const cartCount = computed(() => cartItems.value.reduce((acc, item) => acc + Number(item.quantity), 0))
 const isLoggedIn = computed(() => sessionData.value.mode === 'auth' && Boolean(sessionData.value.token))
-const userLabel = computed(() => {
+const profileTriggerLabel = computed(() => {
   const name = sessionData.value?.user?.name
-  return name ? `Ola, ${name}` : 'Logado'
+  if (!name) return 'Entrar'
+
+  const firstName = String(name).trim().split(/\s+/)[0]
+  return `Ola, ${firstName}`
 })
-const userEmail = computed(() => sessionData.value?.user?.email || '')
 
 function loadSessionData() {
   sessionData.value = JSON.parse(
@@ -213,6 +218,11 @@ function goOrders() {
 function goLogin() {
   profileMenuOpen.value = false
   router.push('/login')
+}
+
+function goProfile() {
+  profileMenuOpen.value = false
+  router.push('/perfil')
 }
 
 function toggleProfileMenu() {
@@ -487,15 +497,75 @@ onBeforeUnmount(() => {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  flex-wrap: nowrap;
 }
 
 .bf-icon-btn {
   color: #211812;
+  height: 48px;
+  min-height: 48px;
+}
+
+.bf-icon-btn :deep(.q-btn__content) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .bf-icon-btn :deep(.q-btn__content .q-icon) {
   font-size: 37px;
+}
+
+.bf-profile-trigger {
+  color: #211812;
+  border-radius: 999px;
+  padding-inline: 6px;
+  min-height: 48px;
+  height: 48px;
+  white-space: nowrap;
+}
+
+.bf-profile-trigger :deep(.q-btn__content) {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+.bf-profile-trigger-icon {
+  font-size: 36px;
+}
+
+.bf-profile-trigger-label {
+  font-size: 1.07rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.bf-profile-trigger-caret {
+  color: #514137;
+  line-height: 1;
+}
+
+.bf-profile-menu-list {
+  min-width: 270px;
+  padding: 6px 0;
+}
+
+.bf-profile-menu-item {
+  min-height: 52px;
+}
+
+.bf-profile-menu-item :deep(.q-item__section--avatar) {
+  min-width: 38px;
+  color: #3a2920;
+}
+
+.bf-profile-menu-item :deep(.q-item__label) {
+  font-size: 1.04rem;
+  font-weight: 600;
 }
 
 .bf-cart-badge {
@@ -534,7 +604,9 @@ onBeforeUnmount(() => {
     overflow-x: auto;
     padding-bottom: 8px;
   }
+
+  .bf-profile-trigger-label {
+    display: none;
+  }
 }
 </style>
-
-
