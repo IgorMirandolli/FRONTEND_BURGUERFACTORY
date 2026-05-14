@@ -24,13 +24,22 @@
 
       <q-card-section class="detail-status">
         <div class="detail-timeline">
-          <div v-for="(stage, index) in stages" :key="stage.key" class="detail-step" :class="{ active: index <= detailStageIndex }">
+          <div
+            v-for="(stage, index) in stages"
+            :key="stage.key"
+            class="detail-step"
+            :class="{ active: index <= detailStageIndex }"
+          >
             <div class="detail-step-dot">
               <q-icon :name="stage.icon" size="14px" />
             </div>
             <div class="detail-step-text">{{ stage.label }}</div>
           </div>
-          <div class="detail-line detail-line-active" :style="{ width: `${(detailStageIndex / 3) * 100}%` }" />
+          <div
+            class="detail-line detail-line-active"
+            :class="{ 'is-live': isLiveTracking }"
+            :style="{ width: `${detailProgressPercent}%` }"
+          />
           <div class="detail-line detail-line-base" />
         </div>
 
@@ -78,10 +87,14 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+const TRACKING_TOTAL_MS = 24 * 1000
+const PROGRESS_TICK_MS = 1000
+const ORDER_POLL_INTERVAL_MS = 5000
+
 const route = useRoute()
 const router = useRouter()
 
@@ -89,6 +102,11 @@ const loading = ref(false)
 const errorMessage = ref('')
 const order = ref(null)
 const items = ref([])
+const nowTimestamp = ref(Date.now())
+const trackingProgressFromServer = ref(0)
+
+let progressTickTimerId = null
+let orderPollTimerId = null
 
 const stages = [
   { key: 'received', label: 'Pedido recebido', icon: 'inventory_2' },
@@ -102,6 +120,26 @@ const detailStageIndex = computed(() => {
   if (status === 'delivered') return 3
   if (status === 'on_the_way') return 2
   return 1
+})
+
+const detailProgressPercent = computed(() => {
+  if (!order.value) return 0
+
+  const status = order.value.computed_status
+  if (status === 'delivered') return 100
+
+  const createdAtTimestamp = Date.parse(order.value.created_at)
+  if (!Number.isNaN(createdAtTimestamp)) {
+    const elapsed = Math.max(0, nowTimestamp.value - createdAtTimestamp)
+    const percent = (elapsed / TRACKING_TOTAL_MS) * 100
+    return Number(Math.min(100, Math.max(0, percent)).toFixed(1))
+  }
+
+  return Number(Math.min(100, Math.max(0, trackingProgressFromServer.value)).toFixed(1))
+})
+
+const isLiveTracking = computed(() => {
+  return Boolean(order.value) && order.value.computed_status !== 'delivered'
 })
 
 function goBack() {
@@ -172,8 +210,11 @@ function getRequestContext() {
 }
 
 async function loadOrder() {
-  loading.value = true
-  errorMessage.value = ''
+  const shouldShowLoading = !order.value
+  if (shouldShowLoading) {
+    loading.value = true
+    errorMessage.value = ''
+  }
 
   try {
     const orderId = Number(route.params.orderId)
@@ -198,14 +239,49 @@ async function loadOrder() {
 
     order.value = data.order
     items.value = data.items || []
+    trackingProgressFromServer.value = Number(data.order?.tracking_progress || 0)
+    nowTimestamp.value = Date.now()
+    errorMessage.value = ''
   } catch {
-    errorMessage.value = 'Erro de conexao ao abrir pedido.'
+    if (!order.value) {
+      errorMessage.value = 'Erro de conexao ao abrir pedido.'
+    }
   } finally {
-    loading.value = false
+    if (shouldShowLoading) {
+      loading.value = false
+    }
+  }
+}
+
+function startRealtimeTracking() {
+  progressTickTimerId = window.setInterval(() => {
+    nowTimestamp.value = Date.now()
+  }, PROGRESS_TICK_MS)
+
+  orderPollTimerId = window.setInterval(() => {
+    if (!isLiveTracking.value) return
+    loadOrder()
+  }, ORDER_POLL_INTERVAL_MS)
+}
+
+function stopRealtimeTracking() {
+  if (progressTickTimerId) {
+    window.clearInterval(progressTickTimerId)
+    progressTickTimerId = null
+  }
+
+  if (orderPollTimerId) {
+    window.clearInterval(orderPollTimerId)
+    orderPollTimerId = null
   }
 }
 
 onMounted(() => {
   loadOrder()
+  startRealtimeTracking()
+})
+
+onBeforeUnmount(() => {
+  stopRealtimeTracking()
 })
 </script>
