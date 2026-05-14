@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Anton&display=swap');
 
 :root {
+  --bf-global-scale: 0.9;
   --bf-bg: #ece4d9;
   --bf-page-bg: #faf6ef;
   --bf-pane: #e9dcc6;
@@ -11,10 +12,25 @@
   --bf-border: #d1c2ab;
 }
 
+html,
+body {
+  min-height: 100%;
+}
+
 body {
   font-family: 'Sora', sans-serif;
   background: var(--bf-page-bg);
   color: var(--bf-text);
+  zoom: var(--bf-global-scale);
+}
+
+@supports not (zoom: 1) {
+  #q-app {
+    transform: scale(var(--bf-global-scale));
+    transform-origin: top left;
+    width: calc(100% / var(--bf-global-scale));
+    min-height: calc(100% / var(--bf-global-scale));
+  }
 }
 
 .q-layout,

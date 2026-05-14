@@ -514,7 +514,7 @@ onBeforeUnmount(() => {
 }
 
 .bf-icon-btn :deep(.q-btn__content .q-icon) {
-  font-size: 37px;
+  font-size: 30px;
 }
 
 .bf-profile-trigger {
@@ -535,7 +535,7 @@ onBeforeUnmount(() => {
 }
 
 .bf-profile-trigger-icon {
-  font-size: 36px;
+  font-size: 30px;
 }
 
 .bf-profile-trigger-label {
