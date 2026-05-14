@@ -220,6 +220,7 @@ const cartItems = ref([])
 const cartTotal = ref(0)
 const loadingCart = ref(false)
 const loadingSubmit = ref(false)
+const checkoutIdempotencyKey = ref('')
 const errorMessage = ref('')
 const successMessage = ref('')
 const selectedPaymentMethod = ref('pix')
@@ -468,6 +469,10 @@ async function submitOrder() {
   loadingSubmit.value = true
 
   try {
+    if (!checkoutIdempotencyKey.value) {
+      checkoutIdempotencyKey.value = crypto.randomUUID()
+    }
+
     const { headers, isAuth, sessionId } = getCartContext()
     let url = `${API_BASE_URL}/api/cart/checkout`
 
@@ -480,6 +485,7 @@ async function submitOrder() {
       headers: {
         ...headers,
         'Content-Type': 'application/json',
+        'X-Idempotency-Key': checkoutIdempotencyKey.value,
       },
       body: JSON.stringify({
         customer_name: form.value.customer_name,
@@ -498,6 +504,7 @@ async function submitOrder() {
     }
 
     successMessage.value = 'Pedido finalizado com sucesso.'
+    checkoutIdempotencyKey.value = ''
     cartItems.value = []
     cartTotal.value = 0
     window.dispatchEvent(new Event('bf-cart-updated'))
