@@ -319,6 +319,27 @@ function updateCustomerPhone(value) {
   form.value.customer_phone = formatPhoneForDisplay(value)
 }
 
+function formatCepForDisplay(value) {
+  const digits = String(value || '')
+    .replace(/\D/g, '')
+    .slice(0, 8)
+
+  if (digits.length <= 5) return digits
+  return `${digits.slice(0, 5)}-${digits.slice(5)}`
+}
+
+function applyDefaultAddressToCheckout(address) {
+  if (!address) return
+
+  form.value.cep = formatCepForDisplay(address.cep)
+  form.value.street = address.street || ''
+  form.value.address_number = address.address_number || ''
+  form.value.complement = address.complement || ''
+  form.value.district = address.district || ''
+  form.value.city = address.city || ''
+  form.value.state = address.state || ''
+}
+
 async function hydrateLoggedUserProfile(headers, sessionUser) {
   if (sessionUser?.name) {
     form.value.customer_name = sessionUser.name
@@ -345,6 +366,19 @@ async function hydrateLoggedUserProfile(headers, sessionUser) {
     const profilePhone = user.fone || user.phone
     if (profilePhone) {
       updateCustomerPhone(profilePhone)
+    }
+
+    try {
+      const addressesResponse = await fetch(`${API_BASE_URL}/api/profile/addresses`, { headers })
+      const addressesData = await addressesResponse.json()
+
+      if (addressesResponse.ok && Array.isArray(addressesData?.items) && addressesData.items.length > 0) {
+        const defaultAddress =
+          addressesData.items.find((address) => address.is_default) || addressesData.items[0]
+        applyDefaultAddressToCheckout(defaultAddress)
+      }
+    } catch {
+      // If loading addresses fails, we keep checkout working with profile and manual address input.
     }
 
     const session = JSON.parse(localStorage.getItem('bf_session') || '{}')

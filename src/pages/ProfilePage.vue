@@ -107,7 +107,7 @@
             />
           </article>
 
-          <section class="bf-section">
+          <section class="bf-section" id="profile-personal">
             <h2>Informacoes pessoais</h2>
             <article class="bf-form-card">
               <div class="bf-field-group">
@@ -185,6 +185,168 @@
                   :loading="savingProfile"
                   :disable="loadingProfile"
                   @click="saveProfile"
+                />
+              </div>
+            </article>
+          </section>
+
+          <section class="bf-section" id="profile-addresses">
+            <h2>Enderecos</h2>
+            <article class="bf-form-card">
+              <div v-if="addresses.length === 0" class="bf-address-empty">
+                Nenhum endereco cadastrado ainda.
+              </div>
+
+              <div v-else class="bf-address-list">
+                <article
+                  v-for="address in addresses"
+                  :key="address.id"
+                  class="bf-address-item"
+                  :class="{ 'is-default': address.is_default }"
+                >
+                  <div class="bf-address-item-head">
+                    <strong>{{ address.label || 'Endereco' }}</strong>
+                    <span v-if="address.is_default" class="bf-address-default-tag">Padrao</span>
+                  </div>
+                  <p>
+                    {{ address.street }}, {{ address.address_number }}
+                    <span v-if="address.complement"> - {{ address.complement }}</span>
+                  </p>
+                  <p>{{ address.district || 'Sem bairro' }} - {{ address.city }}/{{ address.state }}</p>
+                  <p>CEP {{ formatCepForDisplay(address.cep) }}</p>
+
+                  <div class="bf-address-actions">
+                    <q-btn
+                      flat
+                      no-caps
+                      color="deep-orange-8"
+                      label="Editar"
+                      @click="startEditAddress(address)"
+                    />
+                    <q-btn
+                      flat
+                      no-caps
+                      color="positive"
+                      :disable="address.is_default || settingDefaultAddressId === address.id"
+                      :loading="settingDefaultAddressId === address.id"
+                      label="Definir padrao"
+                      @click="setAddressAsDefault(address.id)"
+                    />
+                    <q-btn
+                      flat
+                      no-caps
+                      color="negative"
+                      :loading="removingAddressId === address.id"
+                      label="Remover"
+                      @click="removeAddress(address.id)"
+                    />
+                  </div>
+                </article>
+              </div>
+
+              <div class="bf-address-form-title">
+                {{ editingAddressId ? 'Editar endereco' : 'Adicionar novo endereco' }}
+              </div>
+
+              <div class="bf-two-cols">
+                <div class="bf-field-group">
+                  <label>Identificacao</label>
+                  <div class="bf-native-field">
+                    <input
+                      v-model="addressForm.label"
+                      type="text"
+                      placeholder="Ex.: Casa, Trabalho"
+                      class="bf-native-input"
+                    />
+                  </div>
+                </div>
+
+                <div class="bf-field-group">
+                  <label>CEP</label>
+                  <div class="bf-native-field">
+                    <input
+                      :value="addressForm.cep"
+                      type="text"
+                      inputmode="numeric"
+                      maxlength="9"
+                      placeholder="00000-000"
+                      class="bf-native-input"
+                      @input="updateAddressCep($event?.target?.value || '')"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div class="bf-two-cols">
+                <div class="bf-field-group">
+                  <label>Rua</label>
+                  <div class="bf-native-field">
+                    <input v-model="addressForm.street" type="text" class="bf-native-input" />
+                  </div>
+                </div>
+
+                <div class="bf-field-group">
+                  <label>Numero</label>
+                  <div class="bf-native-field">
+                    <input v-model="addressForm.address_number" type="text" class="bf-native-input" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="bf-two-cols">
+                <div class="bf-field-group">
+                  <label>Complemento</label>
+                  <div class="bf-native-field">
+                    <input v-model="addressForm.complement" type="text" class="bf-native-input" />
+                  </div>
+                </div>
+
+                <div class="bf-field-group">
+                  <label>Bairro</label>
+                  <div class="bf-native-field">
+                    <input v-model="addressForm.district" type="text" class="bf-native-input" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="bf-two-cols">
+                <div class="bf-field-group">
+                  <label>Cidade</label>
+                  <div class="bf-native-field">
+                    <input v-model="addressForm.city" type="text" class="bf-native-input" />
+                  </div>
+                </div>
+
+                <div class="bf-field-group">
+                  <label>Estado</label>
+                  <div class="bf-native-field">
+                    <input v-model="addressForm.state" type="text" maxlength="40" class="bf-native-input" />
+                  </div>
+                </div>
+              </div>
+
+              <label class="bf-address-default-check">
+                <input v-model="addressForm.is_default" type="checkbox" />
+                Definir como endereco padrao
+              </label>
+
+              <div class="bf-form-actions bf-address-form-actions">
+                <q-btn
+                  v-if="editingAddressId"
+                  flat
+                  no-caps
+                  color="grey-8"
+                  label="Cancelar"
+                  @click="resetAddressForm"
+                />
+                <q-btn
+                  no-caps
+                  unelevated
+                  class="bf-primary-btn"
+                  :loading="savingAddress"
+                  :disable="loadingAddresses"
+                  :label="editingAddressId ? 'Salvar endereco' : 'Adicionar endereco'"
+                  @click="saveAddress"
                 />
               </div>
             </article>
@@ -328,6 +490,11 @@ const savingProfile = ref(false)
 const changingPassword = ref(false)
 const deletingAccount = ref(false)
 const uploadingAvatar = ref(false)
+const loadingAddresses = ref(false)
+const savingAddress = ref(false)
+const removingAddressId = ref(null)
+const settingDefaultAddressId = ref(null)
+const editingAddressId = ref(null)
 
 const errorMessage = ref('')
 const successMessage = ref('')
@@ -336,12 +503,25 @@ const infoMessage = ref('')
 const profileUser = ref(null)
 const avatarFileInput = ref(null)
 const avatarPreviewUrl = ref('')
+const addresses = ref([])
 const personalForm = ref({
   name: '',
   email: '',
   phone: '',
   birth_date: '',
   gender: '',
+})
+
+const addressForm = ref({
+  label: '',
+  cep: '',
+  street: '',
+  address_number: '',
+  complement: '',
+  district: '',
+  city: '',
+  state: '',
+  is_default: false,
 })
 
 const passwordForm = ref({
@@ -456,6 +636,56 @@ function updatePhone(value) {
   personalForm.value.phone = formatPhoneForDisplay(value)
 }
 
+function normalizeCepDigits(value) {
+  return String(value || '')
+    .replace(/\D/g, '')
+    .slice(0, 8)
+}
+
+function formatCepForDisplay(value) {
+  const digits = normalizeCepDigits(value)
+  if (digits.length <= 5) return digits
+  return `${digits.slice(0, 5)}-${digits.slice(5)}`
+}
+
+function updateAddressCep(value) {
+  addressForm.value.cep = formatCepForDisplay(value)
+}
+
+function createEmptyAddressForm() {
+  return {
+    label: '',
+    cep: '',
+    street: '',
+    address_number: '',
+    complement: '',
+    district: '',
+    city: '',
+    state: '',
+    is_default: false,
+  }
+}
+
+function resetAddressForm() {
+  editingAddressId.value = null
+  addressForm.value = createEmptyAddressForm()
+}
+
+function startEditAddress(address) {
+  editingAddressId.value = address.id
+  addressForm.value = {
+    label: address.label || '',
+    cep: formatCepForDisplay(address.cep || ''),
+    street: address.street || '',
+    address_number: address.address_number || '',
+    complement: address.complement || '',
+    district: address.district || '',
+    city: address.city || '',
+    state: address.state || '',
+    is_default: Boolean(address.is_default),
+  }
+}
+
 function normalizeBirthDateForInput(rawValue) {
   if (!rawValue) return ''
 
@@ -563,11 +793,196 @@ async function handleAvatarSelected(event) {
   }
 }
 
+async function loadAddresses() {
+  const headers = getAuthHeaders()
+  if (!headers) {
+    router.push('/login')
+    return
+  }
+
+  loadingAddresses.value = true
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/profile/addresses`, { headers })
+    const data = await response.json()
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        logout()
+        return
+      }
+
+      errorMessage.value = data.message || 'Nao foi possivel carregar enderecos.'
+      return
+    }
+
+    addresses.value = data.items || []
+  } catch {
+    errorMessage.value = 'Erro de conexao ao carregar enderecos.'
+  } finally {
+    loadingAddresses.value = false
+  }
+}
+
+async function saveAddress() {
+  const headers = getAuthHeaders()
+  if (!headers) {
+    router.push('/login')
+    return
+  }
+
+  const normalizedCep = normalizeCepDigits(addressForm.value.cep)
+  if (!normalizedCep || normalizedCep.length < 8) {
+    errorMessage.value = 'Informe um CEP valido com 8 digitos.'
+    return
+  }
+
+  if (!addressForm.value.street || !addressForm.value.address_number || !addressForm.value.city || !addressForm.value.state) {
+    errorMessage.value = 'Preencha rua, numero, cidade e estado.'
+    return
+  }
+
+  savingAddress.value = true
+  clearMessages()
+
+  const payload = {
+    label: addressForm.value.label || null,
+    cep: normalizedCep,
+    street: addressForm.value.street,
+    address_number: addressForm.value.address_number,
+    complement: addressForm.value.complement || null,
+    district: addressForm.value.district || null,
+    city: addressForm.value.city,
+    state: addressForm.value.state,
+    is_default: Boolean(addressForm.value.is_default),
+  }
+
+  try {
+    const isEditing = Boolean(editingAddressId.value)
+    const url = isEditing
+      ? `${API_BASE_URL}/api/profile/addresses/${editingAddressId.value}`
+      : `${API_BASE_URL}/api/profile/addresses`
+    const method = isEditing ? 'PUT' : 'POST'
+
+    const response = await fetch(url, {
+      method,
+      headers: {
+        ...headers,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    })
+
+    const data = await response.json()
+    if (!response.ok) {
+      if (response.status === 401) {
+        logout()
+        return
+      }
+
+      errorMessage.value = data.message || 'Nao foi possivel salvar endereco.'
+      return
+    }
+
+    successMessage.value = data.message || 'Endereco salvo com sucesso.'
+    resetAddressForm()
+    await loadAddresses()
+  } catch {
+    errorMessage.value = 'Erro de conexao ao salvar endereco.'
+  } finally {
+    savingAddress.value = false
+  }
+}
+
+async function setAddressAsDefault(addressId) {
+  const headers = getAuthHeaders()
+  if (!headers) {
+    router.push('/login')
+    return
+  }
+
+  settingDefaultAddressId.value = addressId
+  clearMessages()
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/profile/addresses/${addressId}/default`, {
+      method: 'PUT',
+      headers,
+    })
+    const data = await response.json()
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        logout()
+        return
+      }
+
+      errorMessage.value = data.message || 'Nao foi possivel definir endereco padrao.'
+      return
+    }
+
+    successMessage.value = data.message || 'Endereco padrao atualizado.'
+    await loadAddresses()
+  } catch {
+    errorMessage.value = 'Erro de conexao ao definir endereco padrao.'
+  } finally {
+    settingDefaultAddressId.value = null
+  }
+}
+
+async function removeAddress(addressId) {
+  const headers = getAuthHeaders()
+  if (!headers) {
+    router.push('/login')
+    return
+  }
+
+  const confirmed = window.confirm('Deseja remover este endereco?')
+  if (!confirmed) return
+
+  removingAddressId.value = addressId
+  clearMessages()
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/profile/addresses/${addressId}`, {
+      method: 'DELETE',
+      headers,
+    })
+    const data = await response.json()
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        logout()
+        return
+      }
+
+      errorMessage.value = data.message || 'Nao foi possivel remover endereco.'
+      return
+    }
+
+    if (editingAddressId.value === addressId) {
+      resetAddressForm()
+    }
+
+    successMessage.value = data.message || 'Endereco removido com sucesso.'
+    await loadAddresses()
+  } catch {
+    errorMessage.value = 'Erro de conexao ao remover endereco.'
+  } finally {
+    removingAddressId.value = null
+  }
+}
+
 function handleSideItemClick(item) {
   if (item.key === 'profile') return
 
   if (item.key === 'orders') {
     router.push('/pedidos')
+    return
+  }
+
+  if (item.key === 'address') {
+    document.getElementById('profile-addresses')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     return
   }
 
@@ -790,7 +1205,9 @@ async function deleteAccount() {
 }
 
 onMounted(() => {
+  resetAddressForm()
   loadProfile()
+  loadAddresses()
 })
 </script>
 
@@ -1109,6 +1526,86 @@ onMounted(() => {
 .bf-form-actions {
   display: flex;
   justify-content: flex-end;
+}
+
+.bf-address-empty {
+  border: 1px dashed #e5d4bf;
+  border-radius: 10px;
+  padding: 14px;
+  color: #6a5a4e;
+  font-size: 1.02rem;
+}
+
+.bf-address-list {
+  display: grid;
+  gap: 10px;
+}
+
+.bf-address-item {
+  border: 1px solid #ead8c3;
+  border-radius: 10px;
+  background: #fffdf9;
+  padding: 12px;
+}
+
+.bf-address-item.is-default {
+  border-color: #efb06f;
+  box-shadow: 0 0 0 1px rgba(239, 123, 32, 0.14) inset;
+}
+
+.bf-address-item-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.bf-address-item-head strong {
+  color: #2d1f17;
+  font-size: 1.05rem;
+}
+
+.bf-address-default-tag {
+  border-radius: 999px;
+  background: #ffe8cf;
+  color: #c56314;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 3px 8px;
+}
+
+.bf-address-item p {
+  margin: 6px 0 0;
+  color: #5f5247;
+  font-size: 0.98rem;
+  line-height: 1.35;
+}
+
+.bf-address-actions {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.bf-address-form-title {
+  margin-top: 2px;
+  color: #2a1d16;
+  font-size: 1.12rem;
+  font-weight: 700;
+}
+
+.bf-address-default-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #4f4035;
+  font-size: 0.98rem;
+}
+
+.bf-address-form-actions {
+  gap: 8px;
 }
 
 .bf-primary-btn {
