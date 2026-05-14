@@ -1,6 +1,14 @@
 <template>
   <q-page class="bf-profile-page">
     <div class="bf-profile-shell">
+      <input
+        ref="avatarFileInput"
+        type="file"
+        accept="image/png,image/jpeg,image/webp"
+        class="bf-hidden-file-input"
+        @change="handleAvatarSelected"
+      />
+
       <q-banner v-if="errorMessage" class="bg-red-1 text-red-9 q-mb-md rounded-borders">
         {{ errorMessage }}
       </q-banner>
@@ -53,9 +61,20 @@
           <article class="bf-profile-summary">
             <div class="bf-avatar-wrap">
               <div class="bf-avatar">
-                <q-icon name="person_outline" size="74px" />
+                <img
+                  v-if="avatarImageUrl"
+                  :src="avatarImageUrl"
+                  alt="Foto de perfil"
+                  class="bf-avatar-image"
+                />
+                <q-icon v-else name="person_outline" size="74px" />
               </div>
-              <button type="button" class="bf-avatar-action" @click="editPhoto">
+              <button
+                type="button"
+                class="bf-avatar-action"
+                :disabled="uploadingAvatar"
+                @click="editPhoto"
+              >
                 <q-icon name="photo_camera" size="18px" />
               </button>
             </div>
@@ -82,6 +101,8 @@
               color="deep-orange-8"
               class="bf-edit-photo-btn"
               label="Editar foto"
+              :loading="uploadingAvatar"
+              :disable="uploadingAvatar"
               @click="editPhoto"
             />
           </article>
@@ -289,6 +310,8 @@ import { useRouter } from 'vue-router'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 const router = useRouter()
+const MAX_AVATAR_SIZE_BYTES = 5 * 1024 * 1024
+const ALLOWED_AVATAR_TYPES = new Set(['image/jpeg', 'image/jpg', 'image/png', 'image/webp'])
 
 const ALLOWED_EMAIL_DOMAINS = new Set([
   'gmail.com',
@@ -304,12 +327,15 @@ const loadingProfile = ref(false)
 const savingProfile = ref(false)
 const changingPassword = ref(false)
 const deletingAccount = ref(false)
+const uploadingAvatar = ref(false)
 
 const errorMessage = ref('')
 const successMessage = ref('')
 const infoMessage = ref('')
 
 const profileUser = ref(null)
+const avatarFileInput = ref(null)
+const avatarPreviewUrl = ref('')
 const personalForm = ref({
   name: '',
   email: '',
@@ -356,6 +382,11 @@ const memberSinceLabel = computed(() => {
     month: 'long',
     year: 'numeric',
   })
+})
+
+const avatarImageUrl = computed(() => {
+  if (avatarPreviewUrl.value) return avatarPreviewUrl.value
+  return resolveAvatarUrl(profileUser.value?.avatar_url)
 })
 
 function clearMessages() {
@@ -437,13 +468,99 @@ function normalizeBirthDateForInput(rawValue) {
   return date.toISOString().slice(0, 10)
 }
 
+function resolveAvatarUrl(rawValue) {
+  const value = String(rawValue || '').trim()
+  if (!value) return ''
+
+  if (value.startsWith('data:')) return value
+  if (value.startsWith('http://') || value.startsWith('https://')) return value
+  if (value.startsWith('/uploads/')) return `${API_BASE_URL}${value}`
+  if (value.startsWith('/')) return value
+
+  return `${API_BASE_URL}/${value}`
+}
+
+function fileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(String(reader.result || ''))
+    reader.onerror = () => reject(new Error('Falha ao ler arquivo'))
+    reader.readAsDataURL(file)
+  })
+}
+
 function goMenu() {
   router.push('/lanches')
 }
 
 function editPhoto() {
   clearMessages()
-  infoMessage.value = 'Edicao de foto sera liberada em breve.'
+  avatarFileInput.value?.click()
+}
+
+async function handleAvatarSelected(event) {
+  const file = event?.target?.files?.[0]
+  event.target.value = ''
+  if (!file) return
+
+  clearMessages()
+
+  if (!ALLOWED_AVATAR_TYPES.has(file.type)) {
+    errorMessage.value = 'Formato invalido. Use JPG, PNG ou WEBP.'
+    return
+  }
+
+  if (file.size > MAX_AVATAR_SIZE_BYTES) {
+    errorMessage.value = 'A imagem deve ter no maximo 5MB.'
+    return
+  }
+
+  const headers = getAuthHeaders()
+  if (!headers) {
+    router.push('/login')
+    return
+  }
+
+  uploadingAvatar.value = true
+
+  try {
+    const avatarBase64 = await fileToDataUrl(file)
+    avatarPreviewUrl.value = avatarBase64
+
+    const response = await fetch(`${API_BASE_URL}/api/profile/avatar`, {
+      method: 'PUT',
+      headers: {
+        ...headers,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        avatar_base64: avatarBase64,
+      }),
+    })
+
+    const data = await response.json()
+    if (!response.ok || !data?.user) {
+      avatarPreviewUrl.value = ''
+
+      if (response.status === 401) {
+        logout()
+        return
+      }
+
+      errorMessage.value = data.message || 'Nao foi possivel atualizar foto de perfil.'
+      return
+    }
+
+    profileUser.value = data.user
+    syncSessionUser(data.user)
+    avatarPreviewUrl.value = ''
+    successMessage.value = data.message || 'Foto de perfil atualizada com sucesso.'
+  } catch {
+    avatarPreviewUrl.value = ''
+    errorMessage.value = 'Erro de conexao ao atualizar foto de perfil.'
+  } finally {
+    uploadingAvatar.value = false
+  }
 }
 
 function handleSideItemClick(item) {
@@ -489,6 +606,7 @@ async function loadProfile() {
     }
 
     profileUser.value = data.user
+    avatarPreviewUrl.value = ''
     personalForm.value.name = data.user.name || ''
     personalForm.value.email = data.user.email || ''
     personalForm.value.birth_date = normalizeBirthDateForInput(data.user.birth_date)
@@ -552,6 +670,7 @@ async function saveProfile() {
     }
 
     profileUser.value = data.user
+    avatarPreviewUrl.value = ''
     personalForm.value.name = data.user.name || ''
     personalForm.value.email = data.user.email || ''
     personalForm.value.birth_date = normalizeBirthDateForInput(data.user.birth_date)
@@ -685,6 +804,10 @@ onMounted(() => {
   max-width: 1540px;
   margin: 0 auto;
   padding: 0 16px;
+}
+
+.bf-hidden-file-input {
+  display: none;
 }
 
 .bf-profile-grid {
@@ -831,6 +954,13 @@ onMounted(() => {
   justify-content: center;
 }
 
+.bf-avatar-image {
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  object-fit: cover;
+}
+
 .bf-avatar-action {
   position: absolute;
   right: 4px;
@@ -845,6 +975,11 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   cursor: pointer;
+}
+
+.bf-avatar-action:disabled {
+  opacity: 0.72;
+  cursor: not-allowed;
 }
 
 .bf-user-meta h2 {
