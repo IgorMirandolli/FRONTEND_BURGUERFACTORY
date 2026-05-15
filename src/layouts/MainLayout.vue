@@ -27,46 +27,50 @@
             class="bf-profile-trigger"
             @click.stop="toggleProfileMenu"
           >
-            <q-icon name="account_circle" class="bf-profile-trigger-icon" />
+            <span id="bf-profile-icon-anchor" class="bf-profile-trigger-icon-wrap">
+              <q-icon name="account_circle" class="bf-profile-trigger-icon" />
+            </span>
             <span class="bf-profile-trigger-label">{{ profileTriggerLabel }}</span>
             <q-icon name="expand_more" size="20px" class="bf-profile-trigger-caret" />
-
-            <q-menu
-              v-model="profileMenuOpen"
-              anchor="bottom right"
-              self="top right"
-              no-parent-event
-            >
-              <q-list class="bf-profile-menu-list">
-                <q-item v-if="isLoggedIn" clickable v-close-popup class="bf-profile-menu-item" @click="goProfile">
-                  <q-item-section avatar>
-                    <q-icon name="person_outline" />
-                  </q-item-section>
-                  <q-item-section>
-                    <q-item-label>Meu perfil</q-item-label>
-                  </q-item-section>
-                </q-item>
-
-                <q-item v-if="isLoggedIn" clickable v-close-popup class="bf-profile-menu-item" @click="logout">
-                  <q-item-section avatar>
-                    <q-icon name="logout" />
-                  </q-item-section>
-                  <q-item-section>
-                    <q-item-label>Sair</q-item-label>
-                  </q-item-section>
-                </q-item>
-
-                <q-item v-else clickable v-close-popup class="bf-profile-menu-item" @click="goLogin">
-                  <q-item-section avatar>
-                    <q-icon name="login" />
-                  </q-item-section>
-                  <q-item-section>
-                    <q-item-label>Fazer login</q-item-label>
-                  </q-item-section>
-                </q-item>
-              </q-list>
-            </q-menu>
           </q-btn>
+
+          <q-menu
+            v-model="profileMenuOpen"
+            target="#bf-profile-icon-anchor"
+            anchor="bottom left"
+            self="top left"
+            :offset="[0, 10]"
+            no-parent-event
+          >
+            <q-list class="bf-profile-menu-list">
+              <q-item v-if="isLoggedIn" clickable v-close-popup class="bf-profile-menu-item" @click="goProfile">
+                <q-item-section avatar>
+                  <q-icon name="person_outline" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Meu perfil</q-item-label>
+                </q-item-section>
+              </q-item>
+
+              <q-item v-if="isLoggedIn" clickable v-close-popup class="bf-profile-menu-item" @click="logout">
+                <q-item-section avatar>
+                  <q-icon name="logout" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Sair</q-item-label>
+                </q-item-section>
+              </q-item>
+
+              <q-item v-else clickable v-close-popup class="bf-profile-menu-item" @click="goLogin">
+                <q-item-section avatar>
+                  <q-icon name="login" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Fazer login</q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </q-menu>
         </div>
       </q-toolbar>
     </q-header>
@@ -536,6 +540,12 @@ onBeforeUnmount(() => {
 
 .bf-profile-trigger-icon {
   font-size: 30px;
+}
+
+.bf-profile-trigger-icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .bf-profile-trigger-label {

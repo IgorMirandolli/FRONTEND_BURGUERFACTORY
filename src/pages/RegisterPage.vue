@@ -305,6 +305,8 @@ async function handleRegister() {
   loading.value = true
 
   try {
+    const guestSessionId = localStorage.getItem('bf_guest_session_id')
+
     const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -313,6 +315,7 @@ async function handleRegister() {
         fone: phone.value,
         email: email.value,
         password: password.value,
+        ...(guestSessionId ? { session_id: guestSessionId } : {}),
       }),
     })
 

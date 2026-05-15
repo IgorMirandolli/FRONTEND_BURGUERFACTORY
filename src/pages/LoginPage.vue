@@ -189,12 +189,15 @@ async function handleLogin() {
   loading.value = true
 
   try {
+    const guestSessionId = localStorage.getItem('bf_guest_session_id')
+
     const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         email: email.value,
         password: password.value,
+        ...(guestSessionId ? { session_id: guestSessionId } : {}),
       }),
     })
 
