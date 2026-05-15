@@ -145,6 +145,7 @@
                       type="tel"
                       autocomplete="tel"
                       inputmode="numeric"
+                      maxlength="15"
                       class="bf-native-input"
                       @input="updatePhone($event?.target?.value || '')"
                     />

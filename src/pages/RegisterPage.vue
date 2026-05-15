@@ -56,6 +56,7 @@
                     type="tel"
                     autocomplete="tel"
                     inputmode="numeric"
+                    maxlength="15"
                     @input="handlePhoneInput"
                     class="bf-native-input"
                   />

@@ -36,6 +36,7 @@
                 label="Numero de telefone"
                 type="tel"
                 inputmode="numeric"
+                maxlength="15"
                 @update:model-value="updateCustomerPhone"
                 class="bf-input"
               />
@@ -49,7 +50,16 @@
             </header>
 
             <div class="bf-fields bf-two-cols">
-              <q-input v-model="form.cep" outlined dense label="CEP" class="bf-input">
+              <q-input
+                :model-value="form.cep"
+                outlined
+                dense
+                label="CEP"
+                inputmode="numeric"
+                maxlength="9"
+                class="bf-input"
+                @update:model-value="updateCheckoutCep"
+              >
                 <template #append>
                   <q-icon name="search" />
                 </template>
@@ -318,6 +328,10 @@ function formatPhoneForDisplay(rawValue) {
 
 function updateCustomerPhone(value) {
   form.value.customer_phone = formatPhoneForDisplay(value)
+}
+
+function updateCheckoutCep(value) {
+  form.value.cep = formatCepForDisplay(value)
 }
 
 function formatCepForDisplay(value) {
