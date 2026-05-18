@@ -166,6 +166,7 @@
                           v-for="statusOption in statusUpdateOptions"
                           :key="`${order.id}-${statusOption.value}`"
                           clickable
+                          v-close-popup
                           :disable="!canTransitionUi(getOrderStatus(order), statusOption.value)"
                           @click="updateOrderStatus(order.id, statusOption.value)"
                         >
@@ -236,6 +237,46 @@
         </q-card-section>
       </q-card>
     </q-dialog>
+
+    <q-dialog v-model="deliveryConfirmDialogOpen" persistent>
+      <q-card class="bf-delivery-confirm-card">
+        <q-card-section class="bf-delivery-confirm-head">
+          <div class="bf-delivery-confirm-icon">
+            <q-icon name="local_shipping" />
+          </div>
+          <div>
+            <h3>Confirmar entrega</h3>
+            <p>Tem certeza que esse pedido ja foi entregue ao cliente?</p>
+          </div>
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-section class="bf-delivery-confirm-body">
+          <p><strong>Pedido:</strong> #{{ deliveryConfirmOrder?.id || '-' }}</p>
+          <p><strong>Cliente:</strong> {{ deliveryConfirmOrder?.customer_name || '-' }}</p>
+          <p><strong>Total:</strong> R$ {{ formatPrice(deliveryConfirmOrder?.total_amount) }}</p>
+        </q-card-section>
+
+        <q-card-actions align="right" class="bf-delivery-confirm-actions">
+          <q-btn
+            flat
+            no-caps
+            label="Ainda nao"
+            color="grey-8"
+            @click="cancelDeliveryConfirmation"
+          />
+          <q-btn
+            no-caps
+            unelevated
+            color="deep-orange-8"
+            icon="check_circle"
+            label="Confirmar entregue"
+            @click="confirmDeliveryAndUpdateStatus"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -268,6 +309,8 @@ const currentPage = ref(1)
 const pageSize = ref(10)
 const previewDialogOpen = ref(false)
 const previewOrder = ref(null)
+const deliveryConfirmDialogOpen = ref(false)
+const pendingDeliveryStatusUpdate = ref(null)
 
 const pageSizeOptions = [
   { label: '10 por pagina', value: 10 },
@@ -350,6 +393,12 @@ const showingStart = computed(() => {
 
 const showingEnd = computed(() => {
   return Math.min(currentPage.value * pageSize.value, filteredOrders.value.length)
+})
+
+const deliveryConfirmOrder = computed(() => {
+  const orderId = Number(pendingDeliveryStatusUpdate.value?.orderId || 0)
+  if (!orderId) return null
+  return orders.value.find((order) => Number(order.id) === orderId) || null
 })
 
 watch([filteredOrders, pageSize], () => {
@@ -460,6 +509,20 @@ function openOrderPreview(order) {
   previewDialogOpen.value = true
 }
 
+function cancelDeliveryConfirmation() {
+  deliveryConfirmDialogOpen.value = false
+  pendingDeliveryStatusUpdate.value = null
+}
+
+async function confirmDeliveryAndUpdateStatus() {
+  const pendingUpdate = pendingDeliveryStatusUpdate.value
+  if (!pendingUpdate) return
+
+  deliveryConfirmDialogOpen.value = false
+  pendingDeliveryStatusUpdate.value = null
+  await performOrderStatusUpdate(pendingUpdate.orderId, pendingUpdate.status)
+}
+
 async function loadOrders(options = {}) {
   const { silent = false } = options
   if (requestInFlight.value) return
@@ -508,16 +571,11 @@ async function loadOrders(options = {}) {
   }
 }
 
-async function updateOrderStatus(orderId, status) {
+async function performOrderStatusUpdate(orderId, status) {
   const headers = getAuthHeaders()
   if (!headers) {
     router.push('/login')
     return
-  }
-
-  if (status === 'delivered') {
-    const confirmedDelivered = window.confirm('Confirmar que o pedido foi realmente entregue?')
-    if (!confirmedDelivered) return
   }
 
   updatingOrderId.value = orderId
@@ -568,6 +626,16 @@ async function updateOrderStatus(orderId, status) {
   } finally {
     updatingOrderId.value = null
   }
+}
+
+async function updateOrderStatus(orderId, status) {
+  if (status === 'delivered') {
+    pendingDeliveryStatusUpdate.value = { orderId, status }
+    deliveryConfirmDialogOpen.value = true
+    return
+  }
+
+  await performOrderStatusUpdate(orderId, status)
 }
 
 onMounted(() => {
@@ -927,6 +995,53 @@ onBeforeUnmount(() => {
 
 .bf-preview-card p {
   margin: 8px 0 0;
+}
+
+.bf-delivery-confirm-card {
+  width: min(92vw, 500px);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.bf-delivery-confirm-head {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  align-items: start;
+  gap: 10px;
+  background: linear-gradient(180deg, #fff6ec 0%, #fff 100%);
+}
+
+.bf-delivery-confirm-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #ffead6;
+  color: #d96817;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.bf-delivery-confirm-head h3 {
+  margin: 0;
+  color: #2f251f;
+  font-size: 1.12rem;
+}
+
+.bf-delivery-confirm-head p {
+  margin: 4px 0 0;
+  color: #7a6f65;
+  font-size: 0.9rem;
+}
+
+.bf-delivery-confirm-body p {
+  margin: 6px 0 0;
+  color: #433830;
+}
+
+.bf-delivery-confirm-actions {
+  padding: 8px 14px 14px;
 }
 
 @media (max-width: 1080px) {
