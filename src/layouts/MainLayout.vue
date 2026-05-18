@@ -43,6 +43,15 @@
             no-parent-event
           >
             <q-list class="bf-profile-menu-list">
+              <q-item v-if="isAdmin" clickable v-close-popup class="bf-profile-menu-item" @click="goAdmin">
+                <q-item-section avatar>
+                  <q-icon name="admin_panel_settings" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Painel admin</q-item-label>
+                </q-item-section>
+              </q-item>
+
               <q-item v-if="isLoggedIn" clickable v-close-popup class="bf-profile-menu-item" @click="goProfile">
                 <q-item-section avatar>
                   <q-icon name="person_outline" />
@@ -193,6 +202,9 @@ const profileMenuOpen = ref(false)
 
 const cartCount = computed(() => cartItems.value.reduce((acc, item) => acc + Number(item.quantity), 0))
 const isLoggedIn = computed(() => sessionData.value.mode === 'auth' && Boolean(sessionData.value.token))
+const isAdmin = computed(
+  () => isLoggedIn.value && String(sessionData.value?.user?.role || '').toLowerCase() === 'admin'
+)
 const profileTriggerLabel = computed(() => {
   const name = sessionData.value?.user?.name
   if (!name) return 'Entrar'
@@ -227,6 +239,11 @@ function goLogin() {
 function goProfile() {
   profileMenuOpen.value = false
   router.push('/perfil')
+}
+
+function goAdmin() {
+  profileMenuOpen.value = false
+  router.push('/admin/pedidos')
 }
 
 function toggleProfileMenu() {

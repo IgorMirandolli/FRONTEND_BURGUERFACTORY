@@ -120,10 +120,11 @@
 
 <script setup>
 import { onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import logo from 'src/assets/logoburguerfactory.png'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+const route = useRoute()
 const router = useRouter()
 
 const ALLOWED_EMAIL_DOMAINS = new Set([
@@ -221,6 +222,19 @@ async function handleLogin() {
       localStorage.setItem('bf_remember_email', email.value)
     } else {
       localStorage.removeItem('bf_remember_email')
+    }
+
+    const requestedRedirect = typeof route.query.redirect === 'string' ? route.query.redirect : ''
+    const userRole = String(data?.user?.role || '').toLowerCase()
+
+    if (requestedRedirect) {
+      router.push(requestedRedirect)
+      return
+    }
+
+    if (userRole === 'admin') {
+      router.push('/admin/pedidos')
+      return
     }
 
     router.push('/lanches')

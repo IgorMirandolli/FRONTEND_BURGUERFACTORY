@@ -87,13 +87,10 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
-const TRACKING_TOTAL_MS = 24 * 1000
-const PROGRESS_TICK_MS = 1000
-const ORDER_POLL_INTERVAL_MS = 5000
 
 const route = useRoute()
 const router = useRouter()
@@ -102,11 +99,7 @@ const loading = ref(false)
 const errorMessage = ref('')
 const order = ref(null)
 const items = ref([])
-const nowTimestamp = ref(Date.now())
 const trackingProgressFromServer = ref(0)
-
-let progressTickTimerId = null
-let orderPollTimerId = null
 
 const stages = [
   { key: 'received', label: 'Pedido recebido', icon: 'inventory_2' },
@@ -117,29 +110,36 @@ const stages = [
 
 const detailStageIndex = computed(() => {
   const status = order.value?.computed_status
-  if (status === 'delivered') return 3
+  if (status === 'pending') return 0
+  if (status === 'cancelled') return 0
+  if (status === 'preparing') return 1
   if (status === 'on_the_way') return 2
-  return 1
+  if (status === 'delivered') return 3
+  return 0
 })
 
 const detailProgressPercent = computed(() => {
   if (!order.value) return 0
-
   const status = order.value.computed_status
-  if (status === 'delivered') return 100
 
-  const createdAtTimestamp = Date.parse(order.value.created_at)
-  if (!Number.isNaN(createdAtTimestamp)) {
-    const elapsed = Math.max(0, nowTimestamp.value - createdAtTimestamp)
-    const percent = (elapsed / TRACKING_TOTAL_MS) * 100
-    return Number(Math.min(100, Math.max(0, percent)).toFixed(1))
+  const progressByStatus = {
+    pending: 20,
+    preparing: 45,
+    on_the_way: 80,
+    delivered: 100,
+    cancelled: 0,
+  }
+
+  if (typeof progressByStatus[status] === 'number') {
+    return progressByStatus[status]
   }
 
   return Number(Math.min(100, Math.max(0, trackingProgressFromServer.value)).toFixed(1))
 })
 
 const isLiveTracking = computed(() => {
-  return Boolean(order.value) && order.value.computed_status !== 'delivered'
+  if (!order.value) return false
+  return !['delivered', 'cancelled'].includes(order.value.computed_status)
 })
 
 function goBack() {
@@ -240,7 +240,6 @@ async function loadOrder() {
     order.value = data.order
     items.value = data.items || []
     trackingProgressFromServer.value = Number(data.order?.tracking_progress || 0)
-    nowTimestamp.value = Date.now()
     errorMessage.value = ''
   } catch {
     if (!order.value) {
@@ -253,35 +252,67 @@ async function loadOrder() {
   }
 }
 
-function startRealtimeTracking() {
-  progressTickTimerId = window.setInterval(() => {
-    nowTimestamp.value = Date.now()
-  }, PROGRESS_TICK_MS)
-
-  orderPollTimerId = window.setInterval(() => {
-    if (!isLiveTracking.value) return
-    loadOrder()
-  }, ORDER_POLL_INTERVAL_MS)
-}
-
-function stopRealtimeTracking() {
-  if (progressTickTimerId) {
-    window.clearInterval(progressTickTimerId)
-    progressTickTimerId = null
-  }
-
-  if (orderPollTimerId) {
-    window.clearInterval(orderPollTimerId)
-    orderPollTimerId = null
-  }
-}
-
 onMounted(() => {
   loadOrder()
-  startRealtimeTracking()
-})
-
-onBeforeUnmount(() => {
-  stopRealtimeTracking()
 })
 </script>
+
+<style scoped>
+.detail-line-active.is-live {
+  position: absolute;
+  overflow: hidden;
+  filter: saturate(1.08);
+  animation: bf-status-pulse 1.2s ease-in-out infinite;
+}
+
+.detail-line-active.is-live::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.38) 50%, rgba(255, 255, 255, 0) 100%);
+  animation: bf-status-shimmer 1.9s linear infinite;
+}
+
+.detail-step.active .detail-step-dot {
+  animation: bf-dot-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes bf-status-pulse {
+  0% {
+    opacity: 0.78;
+    transform: scaleY(0.98);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+  100% {
+    opacity: 0.78;
+    transform: scaleY(0.98);
+  }
+}
+
+@keyframes bf-status-shimmer {
+  0% {
+    transform: translateX(-115%);
+  }
+  100% {
+    transform: translateX(115%);
+  }
+}
+
+@keyframes bf-dot-pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(236, 116, 31, 0.55);
+  }
+  70% {
+    transform: scale(1.06);
+    box-shadow: 0 0 0 10px rgba(236, 116, 31, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(236, 116, 31, 0);
+  }
+}
+</style>

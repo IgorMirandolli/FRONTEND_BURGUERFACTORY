@@ -43,5 +43,24 @@ export default defineRouter((/* { store, ssrContext } */) => {
     history: createHistory(process.env.VUE_ROUTER_BASE),
   })
 
+  Router.beforeEach((to) => {
+    if (!to.meta?.requiresAdmin) return true
+    if (process.env.SERVER) return true
+
+    const session = JSON.parse(localStorage.getItem('bf_session') || '{}')
+    const isAuth = session.mode === 'auth' && Boolean(session.token)
+    const role = String(session?.user?.role || '').toLowerCase()
+
+    if (!isAuth) {
+      return { path: '/login', query: { redirect: to.fullPath } }
+    }
+
+    if (role !== 'admin') {
+      return { path: '/lanches' }
+    }
+
+    return true
+  })
+
   return Router
 })

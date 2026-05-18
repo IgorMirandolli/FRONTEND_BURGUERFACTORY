@@ -11,6 +11,12 @@ const routes = [
       { path: 'pedidos', component: () => import('pages/OrdersPage.vue') },
       { path: 'pedidos/:orderId', component: () => import('pages/OrderStatusPage.vue') },
       { path: 'perfil', component: () => import('pages/ProfilePage.vue') },
+      { path: 'admin', redirect: '/admin/pedidos', meta: { requiresAdmin: true } },
+      {
+        path: 'admin/pedidos',
+        component: () => import('pages/AdminOrdersPage.vue'),
+        meta: { requiresAdmin: true },
+      },
     ],
   },
 
