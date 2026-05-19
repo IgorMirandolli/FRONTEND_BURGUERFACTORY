@@ -174,7 +174,7 @@ const activeCategoryLabel = computed(() => {
 const visibleItems = computed(() => {
   const selectedCategory = categoriesBar.find((category) => category.key === activeCategory.value)
 
-  return menuItems.value.filter((item) => {
+  const filtered = menuItems.value.filter((item) => {
     const itemCategoryId = Number(item.categoryId ?? item.category_id ?? 0)
     const itemCategorySlug = String(item.category || '').toLowerCase()
 
@@ -183,12 +183,26 @@ const visibleItems = computed(() => {
 
     return matchesById || matchesBySlug
   })
+
+  return filtered.sort((a, b) => {
+    const orderA = Number(a.displayOrder ?? a.display_order ?? 0)
+    const orderB = Number(b.displayOrder ?? b.display_order ?? 0)
+    if (orderA !== orderB) return orderA - orderB
+
+    const idA = Number(a.id || 0)
+    const idB = Number(b.id || 0)
+    return idA - idB
+  })
 })
 
 function resolveImageUrl(imageUrl) {
-  if (!imageUrl) return '/menu/combo-smash.webp'
+  if (!imageUrl) return `${API_BASE_URL}/menu/combo-smash.webp`
   if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) return imageUrl
-  return imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`
+  const normalized = imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`
+  if (normalized.startsWith('/menu/') || normalized.startsWith('/uploads/')) {
+    return `${API_BASE_URL}${normalized}`
+  }
+  return normalized
 }
 
 function formatPrice(value) {
@@ -286,7 +300,9 @@ async function loadMenu() {
   errorMessage.value = ''
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/menu`)
+    const response = await fetch(`${API_BASE_URL}/api/menu`, {
+      cache: 'no-store',
+    })
     const data = await response.json()
 
     if (!response.ok) {

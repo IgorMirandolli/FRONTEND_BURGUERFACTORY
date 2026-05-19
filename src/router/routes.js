@@ -13,6 +13,11 @@ const routes = [
       { path: 'perfil', component: () => import('pages/ProfilePage.vue') },
       { path: 'admin', redirect: '/admin/pedidos', meta: { requiresAdmin: true } },
       {
+        path: 'admin/produtos',
+        component: () => import('pages/AdminProductsPage.vue'),
+        meta: { requiresAdmin: true },
+      },
+      {
         path: 'admin/pedidos',
         component: () => import('pages/AdminOrdersPage.vue'),
         meta: { requiresAdmin: true },

@@ -47,7 +47,7 @@
           <article class="bf-side-promo">
             <h3>Fome de novidade?</h3>
             <p>Experimente nossos combos especiais!</p>
-            <div class="bf-side-promo-image" aria-hidden="true"></div>
+            <div class="bf-side-promo-image" :style="sidePromoImageStyle" aria-hidden="true"></div>
             <button type="button" class="bf-side-promo-btn" @click="goMenu">Ver cardapio</button>
           </article>
         </aside>
@@ -568,6 +568,14 @@ const memberSinceLabel = computed(() => {
 const avatarImageUrl = computed(() => {
   if (avatarPreviewUrl.value) return avatarPreviewUrl.value
   return resolveAvatarUrl(profileUser.value?.avatar_url)
+})
+
+const sidePromoImageStyle = computed(() => {
+  const imageUrl = `${API_BASE_URL}/menu/combo-classic.webp`
+  return {
+    backgroundImage:
+      `linear-gradient(180deg, rgba(24, 15, 10, 0) 0%, rgba(24, 15, 10, 0.6) 100%), url('${imageUrl}')`,
+  }
 })
 
 function clearMessages() {
@@ -1308,9 +1316,6 @@ onMounted(() => {
   height: 170px;
   margin-top: 14px;
   border-radius: 10px;
-  background:
-    linear-gradient(180deg, rgba(24, 15, 10, 0) 0%, rgba(24, 15, 10, 0.6) 100%),
-    url('/menu/combo-classic.webp');
   background-size: cover;
   background-position: center;
 }

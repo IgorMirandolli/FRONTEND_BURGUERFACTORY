@@ -2,6 +2,11 @@
   <q-page class="bf-admin-page">
     <div class="bf-admin-shell">
       <header class="bf-admin-head">
+        <nav class="bf-admin-nav">
+          <button type="button" class="bf-admin-nav-btn is-active" @click="goOrdersAdmin">Pedidos</button>
+          <button type="button" class="bf-admin-nav-btn" @click="goProductsAdmin">Produtos</button>
+        </nav>
+
         <h1>Pedidos</h1>
         <p>Gerencie os status e informacoes dos pedidos.</p>
       </header>
@@ -428,6 +433,14 @@ function getAuthHeaders() {
   return { Authorization: `Bearer ${token}` }
 }
 
+function goOrdersAdmin() {
+  router.push('/admin/pedidos')
+}
+
+function goProductsAdmin() {
+  router.push('/admin/produtos')
+}
+
 function normalizeStatus(value) {
   return String(value || '')
     .trim()
@@ -659,56 +672,83 @@ onBeforeUnmount(() => {
     radial-gradient(circle at 20% 12%, rgba(255, 255, 255, 0.85) 0%, rgba(246, 243, 238, 0.95) 36%),
     #f2efea;
   min-height: 100vh;
-  padding: 20px 0 34px;
+  padding: 22px 0 34px;
 }
 
 .bf-admin-shell {
-  max-width: 1240px;
+  max-width: 1500px;
   margin: 0 auto;
-  padding: 0 14px;
+  padding: 0 16px;
+}
+
+.bf-admin-head {
+  margin-bottom: 12px;
 }
 
 .bf-admin-head h1 {
   margin: 0;
   color: #25201c;
-  font-size: 1.95rem;
+  font-size: 2.15rem;
   line-height: 1.1;
   font-weight: 700;
+}
+
+.bf-admin-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.bf-admin-nav-btn {
+  border: 1px solid #e4d7c9;
+  background: #fff;
+  color: #433930;
+  border-radius: 999px;
+  padding: 9px 14px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.bf-admin-nav-btn.is-active {
+  border-color: #e26d1d;
+  color: #e26d1d;
 }
 
 .bf-admin-head p {
   margin: 6px 0 0;
   color: #706860;
-  font-size: 0.95rem;
+  font-size: 1rem;
 }
 
 .bf-metric-grid {
-  margin-top: 14px;
+  margin-top: 16px;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 10px;
+  gap: 12px;
 }
 
 .bf-metric-card {
   background: #ffffff;
   border: 1px solid #e9e2d9;
   border-radius: 10px;
-  min-height: 88px;
-  padding: 12px 10px;
+  min-height: 96px;
+  padding: 13px 11px;
   display: grid;
-  grid-template-columns: 40px 1fr;
+  grid-template-columns: 44px 1fr;
   align-items: center;
-  gap: 10px;
+  gap: 11px;
 }
 
 .bf-metric-icon {
-  width: 34px;
-  height: 34px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: 20px;
 }
 
 .bf-metric-icon.is-orange {
@@ -739,18 +779,18 @@ onBeforeUnmount(() => {
 .bf-metric-card p {
   margin: 0;
   color: #7c746c;
-  font-size: 0.76rem;
+  font-size: 0.82rem;
 }
 
 .bf-metric-card strong {
   display: block;
   margin-top: 4px;
   color: #23201d;
-  font-size: 1.35rem;
+  font-size: 1.5rem;
 }
 
 .bf-toolbar {
-  margin-top: 16px;
+  margin-top: 18px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -769,9 +809,9 @@ onBeforeUnmount(() => {
   border: 0;
   background: transparent;
   color: #4d443d;
-  font-size: 0.84rem;
+  font-size: 0.92rem;
   font-weight: 600;
-  padding: 9px 11px;
+  padding: 10px 12px;
   border-bottom: 2px solid transparent;
   cursor: pointer;
 }
@@ -796,16 +836,16 @@ onBeforeUnmount(() => {
   border: 1px solid #ddd3c8;
   background: #fff;
   border-radius: 9px;
-  min-height: 38px;
+  min-height: 42px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 0 8px;
+  padding: 0 10px;
 }
 
 .bf-date-box span {
   color: #8b8278;
-  font-size: 0.84rem;
+  font-size: 0.9rem;
 }
 
 .bf-date-input {
@@ -813,7 +853,7 @@ onBeforeUnmount(() => {
   outline: 0;
   background: transparent;
   color: #3a332d;
-  font-size: 0.82rem;
+  font-size: 0.88rem;
 }
 
 .bf-refresh-btn {
@@ -822,7 +862,7 @@ onBeforeUnmount(() => {
 }
 
 .bf-table-card {
-  margin-top: 10px;
+  margin-top: 12px;
   background: #fff;
   border: 1px solid #e9e2d9;
   border-radius: 10px;
@@ -841,16 +881,16 @@ onBeforeUnmount(() => {
 
 .bf-orders-table thead th {
   text-align: left;
-  font-size: 0.78rem;
+  font-size: 0.84rem;
   color: #5a5148;
   font-weight: 700;
   background: #faf8f4;
   border-bottom: 1px solid #ece4d9;
-  padding: 12px 10px;
+  padding: 13px 11px;
 }
 
 .bf-orders-table tbody td {
-  padding: 11px 10px;
+  padding: 12px 11px;
   border-bottom: 1px solid #f1ebe3;
   vertical-align: top;
 }
@@ -862,7 +902,7 @@ onBeforeUnmount(() => {
 .bf-orders-table strong {
   display: block;
   color: #2d2621;
-  font-size: 0.84rem;
+  font-size: 0.9rem;
   line-height: 1.2;
 }
 
@@ -870,7 +910,7 @@ onBeforeUnmount(() => {
   display: block;
   margin-top: 2px;
   color: #857c72;
-  font-size: 0.76rem;
+  font-size: 0.82rem;
 }
 
 .bf-link {
@@ -879,14 +919,14 @@ onBeforeUnmount(() => {
   border: 0;
   background: transparent;
   color: #8a7f74;
-  font-size: 0.73rem;
+  font-size: 0.8rem;
   text-decoration: underline;
   cursor: pointer;
 }
 
 .bf-payment {
   color: #2e2823;
-  font-size: 0.82rem;
+  font-size: 0.88rem;
   font-weight: 600;
 }
 
@@ -894,8 +934,8 @@ onBeforeUnmount(() => {
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
-  font-size: 0.73rem;
-  padding: 3px 8px;
+  font-size: 0.8rem;
+  padding: 4px 9px;
   font-weight: 700;
 }
 
@@ -927,7 +967,7 @@ onBeforeUnmount(() => {
 .bf-action-dropdown {
   border: 1px solid #e4dace;
   border-radius: 8px;
-  font-size: 0.76rem;
+  font-size: 0.84rem;
 }
 
 .bf-status-dot {
@@ -970,7 +1010,7 @@ onBeforeUnmount(() => {
 .bf-table-footer p {
   margin: 0;
   color: #7b7268;
-  font-size: 0.79rem;
+  font-size: 0.86rem;
 }
 
 .bf-footer-right {
@@ -987,6 +1027,7 @@ onBeforeUnmount(() => {
 .bf-empty {
   padding: 22px;
   color: #756c63;
+  font-size: 0.96rem;
 }
 
 .bf-preview-card {

@@ -277,9 +277,13 @@ function formatPrice(value) {
 }
 
 function resolveImageUrl(imageUrl) {
-  if (!imageUrl) return '/menu/combo-smash.webp'
+  if (!imageUrl) return `${API_BASE_URL}/menu/combo-smash.webp`
   if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) return imageUrl
-  return imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`
+  const normalized = imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`
+  if (normalized.startsWith('/menu/') || normalized.startsWith('/uploads/')) {
+    return `${API_BASE_URL}${normalized}`
+  }
+  return normalized
 }
 
 function goMenu() {
