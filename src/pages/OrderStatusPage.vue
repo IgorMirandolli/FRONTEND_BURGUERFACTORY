@@ -56,7 +56,7 @@
             <q-item v-for="item in items" :key="item.id">
               <q-item-section avatar>
                 <q-avatar rounded size="52px">
-                  <img :src="item.imageUrl" :alt="item.name" />
+                  <img :src="resolveOrderImageUrl(item.imageUrl)" :alt="item.name" />
                 </q-avatar>
               </q-item-section>
               <q-item-section>
@@ -164,6 +164,21 @@ function normalizePaymentLabel(payment) {
   if (value.includes('card') || value.includes('cartao')) return 'Cartao'
   if (value.includes('cash') || value.includes('dinheiro')) return 'Dinheiro'
   return payment || '-'
+}
+
+function resolveOrderImageUrl(rawUrl) {
+  const value = String(rawUrl || '').trim()
+  if (!value) return ''
+  if (value.startsWith('http://') || value.startsWith('https://') || value.startsWith('data:')) {
+    return value
+  }
+
+  const normalized = value.startsWith('/') ? value : `/${value}`
+  if (normalized.startsWith('/menu/') || normalized.startsWith('/uploads/')) {
+    return `${API_BASE_URL}${normalized}`
+  }
+
+  return normalized
 }
 
 function getEtaMinutes(orderValue) {

@@ -30,7 +30,11 @@
       <div v-else class="orders-list">
         <article v-for="order in ongoingOrders" :key="order.id" class="order-line">
           <div class="order-thumb">
-            <img v-if="order.preview_image" :src="order.preview_image" :alt="`Pedido #${order.id}`" />
+            <img
+              v-if="order.preview_image"
+              :src="resolveOrderImageUrl(order.preview_image)"
+              :alt="`Pedido #${order.id}`"
+            />
             <q-icon v-else name="restaurant" size="32px" />
           </div>
 
@@ -74,7 +78,11 @@
       <div v-else class="orders-list">
         <article v-for="order in pastOrders" :key="order.id" class="order-line">
           <div class="order-thumb">
-            <img v-if="order.preview_image" :src="order.preview_image" :alt="`Pedido #${order.id}`" />
+            <img
+              v-if="order.preview_image"
+              :src="resolveOrderImageUrl(order.preview_image)"
+              :alt="`Pedido #${order.id}`"
+            />
             <q-icon v-else name="restaurant" size="32px" />
           </div>
 
@@ -138,6 +146,21 @@ function normalizePaymentLabel(payment) {
   if (value.includes('card') || value.includes('cartao')) return 'Cartao'
   if (value.includes('cash') || value.includes('dinheiro')) return 'Dinheiro'
   return payment || '-'
+}
+
+function resolveOrderImageUrl(rawUrl) {
+  const value = String(rawUrl || '').trim()
+  if (!value) return ''
+  if (value.startsWith('http://') || value.startsWith('https://') || value.startsWith('data:')) {
+    return value
+  }
+
+  const normalized = value.startsWith('/') ? value : `/${value}`
+  if (normalized.startsWith('/menu/') || normalized.startsWith('/uploads/')) {
+    return `${API_BASE_URL}${normalized}`
+  }
+
+  return normalized
 }
 
 function getEtaMinutes(order) {
