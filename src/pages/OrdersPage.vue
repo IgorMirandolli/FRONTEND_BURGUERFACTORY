@@ -1,5 +1,5 @@
 <template>
-  <q-page class="orders-page q-pa-md q-pa-lg-xl">
+  <q-page class="orders-page q-pa-md q-pa-lg-xl" :class="{ 'orders-page-mobile': isMobile }">
     <section class="orders-hero q-mb-lg">
       <h1 class="orders-title q-my-none">Meus pedidos</h1>
       <p class="orders-subtitle q-mt-xs q-mb-none">Acompanhe todos os seus pedidos feitos na Burger Factory.</p>
@@ -27,7 +27,7 @@
       </div>
       <div v-else-if="ongoingOrders.length === 0" class="text-grey-7">Nenhum pedido em andamento.</div>
 
-      <div v-else class="orders-list">
+      <div v-else-if="!isMobile" class="orders-list">
         <article v-for="order in ongoingOrders" :key="order.id" class="order-line">
           <div class="order-thumb">
             <img
@@ -64,6 +64,53 @@
           </div>
         </article>
       </div>
+
+      <div v-else class="orders-mobile-list">
+        <article v-for="order in ongoingOrders" :key="order.id" class="orders-mobile-card">
+          <div class="orders-mobile-head">
+            <div>
+              <div class="orders-mobile-id">Pedido #BF{{ order.id }}</div>
+              <div class="orders-mobile-date">{{ formatDate(order.created_at) }}</div>
+            </div>
+            <q-badge class="orders-mobile-badge" color="orange-2" text-color="orange-10">
+              {{ order.computed_status_label }}
+            </q-badge>
+          </div>
+
+          <div class="orders-mobile-body">
+            <div class="orders-mobile-thumb">
+              <img
+                v-if="order.preview_image"
+                :src="resolveOrderImageUrl(order.preview_image)"
+                :alt="`Pedido #${order.id}`"
+              />
+              <q-icon v-else name="restaurant" size="30px" />
+            </div>
+
+            <div class="orders-mobile-info">
+              <div class="orders-mobile-meta">{{ order.items_count || 0 }} itens</div>
+              <div class="orders-mobile-meta">Pagamento: {{ normalizePaymentLabel(order.payment_method) }}</div>
+              <div class="orders-mobile-total">R$ {{ formatPrice(order.total_amount) }}</div>
+            </div>
+          </div>
+
+          <div class="orders-mobile-address">{{ order.delivery_address }}</div>
+
+          <div class="orders-mobile-eta">
+            <span>{{ getEtaText(order) }}</span>
+            <small>Chegada estimada: {{ getEtaClock(order) }}</small>
+          </div>
+
+          <q-btn
+            no-caps
+            unelevated
+            color="deep-orange-8"
+            label="Ver status"
+            class="orders-mobile-action"
+            @click="openOrder(order.id)"
+          />
+        </article>
+      </div>
     </section>
 
     <section v-if="activeTab === 'past'" class="orders-block">
@@ -75,7 +122,7 @@
       </div>
       <div v-else-if="pastOrders.length === 0" class="text-grey-7">Nenhum pedido passado.</div>
 
-      <div v-else class="orders-list">
+      <div v-else-if="!isMobile" class="orders-list">
         <article v-for="order in pastOrders" :key="order.id" class="order-line">
           <div class="order-thumb">
             <img
@@ -109,16 +156,59 @@
           </div>
         </article>
       </div>
+
+      <div v-else class="orders-mobile-list">
+        <article v-for="order in pastOrders" :key="order.id" class="orders-mobile-card">
+          <div class="orders-mobile-head">
+            <div>
+              <div class="orders-mobile-id">Pedido #BF{{ order.id }}</div>
+              <div class="orders-mobile-date">{{ formatDate(order.created_at) }}</div>
+            </div>
+            <q-badge class="orders-mobile-badge" color="green-2" text-color="green-10">Entregue</q-badge>
+          </div>
+
+          <div class="orders-mobile-body">
+            <div class="orders-mobile-thumb">
+              <img
+                v-if="order.preview_image"
+                :src="resolveOrderImageUrl(order.preview_image)"
+                :alt="`Pedido #${order.id}`"
+              />
+              <q-icon v-else name="restaurant" size="30px" />
+            </div>
+
+            <div class="orders-mobile-info">
+              <div class="orders-mobile-meta">{{ order.items_count || 0 }} itens</div>
+              <div class="orders-mobile-meta">Pagamento: {{ normalizePaymentLabel(order.payment_method) }}</div>
+              <div class="orders-mobile-total">R$ {{ formatPrice(order.total_amount) }}</div>
+            </div>
+          </div>
+
+          <div class="orders-mobile-address">{{ order.delivery_address }}</div>
+
+          <q-btn
+            no-caps
+            unelevated
+            color="deep-orange-8"
+            label="Ver detalhes"
+            class="orders-mobile-action"
+            @click="openOrder(order.id)"
+          />
+        </article>
+      </div>
     </section>
   </q-page>
 </template>
 
 <script setup>
+import { useQuasar } from 'quasar'
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+const $q = useQuasar()
 const router = useRouter()
+const isMobile = computed(() => $q.screen.lt.md)
 
 const loading = ref(false)
 const errorMessage = ref('')
@@ -241,3 +331,136 @@ onMounted(() => {
   loadOrders()
 })
 </script>
+
+<style scoped>
+.orders-mobile-list {
+  display: grid;
+  gap: 10px;
+}
+
+.orders-mobile-card {
+  background: #fffdf8;
+  border: 1px solid #e8d7bf;
+  border-radius: 14px;
+  padding: 10px;
+  display: grid;
+  gap: 10px;
+}
+
+.orders-mobile-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.orders-mobile-id {
+  color: #261b14;
+  font-size: 1.22rem;
+  line-height: 1.1;
+  font-family: 'Anton', sans-serif;
+}
+
+.orders-mobile-date {
+  color: #6f6154;
+  margin-top: 3px;
+  font-size: 0.85rem;
+}
+
+.orders-mobile-badge {
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.orders-mobile-body {
+  display: grid;
+  grid-template-columns: 98px 1fr;
+  gap: 10px;
+}
+
+.orders-mobile-thumb {
+  width: 98px;
+  height: 78px;
+  border-radius: 10px;
+  background: #f4ead9;
+  border: 1px solid #e2d0b4;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.orders-mobile-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.orders-mobile-info {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+  align-content: center;
+}
+
+.orders-mobile-meta {
+  color: #5f5145;
+  font-size: 0.88rem;
+}
+
+.orders-mobile-total {
+  margin-top: 5px;
+  color: #d24f21;
+  font-size: 1.42rem;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.orders-mobile-address {
+  color: #625449;
+  font-size: 0.86rem;
+  line-height: 1.35;
+  border-top: 1px solid #f0e2d0;
+  padding-top: 8px;
+}
+
+.orders-mobile-eta {
+  border: 1px solid #edd7bb;
+  background: #fff7ea;
+  border-radius: 10px;
+  padding: 8px 9px;
+  display: grid;
+  gap: 2px;
+}
+
+.orders-mobile-eta span {
+  color: #cf4e1f;
+  font-size: 1.16rem;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.orders-mobile-eta small {
+  color: #6f6154;
+  font-size: 0.8rem;
+}
+
+.orders-mobile-action {
+  border-radius: 10px;
+  min-height: 38px;
+}
+
+.orders-page-mobile :deep(.orders-switch-btn) {
+  font-size: 0.9rem;
+  padding: 7px 1px;
+}
+
+.orders-page-mobile :deep(.orders-block-title) {
+  font-size: 1.46rem;
+}
+
+.orders-page-mobile :deep(.orders-block-subtitle) {
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+}
+</style>

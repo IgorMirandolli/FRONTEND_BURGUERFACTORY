@@ -453,7 +453,7 @@ onBeforeUnmount(() => {
   margin: 0 auto;
   height: 90px;
   padding: 0 16px;
-  display: grid;
+  display: grid !important;
   grid-template-columns: 300px 1fr 180px;
   align-items: center;
   gap: 12px;
@@ -540,6 +540,7 @@ onBeforeUnmount(() => {
 
 .bf-profile-trigger {
   color: #211812;
+  border: 1px solid transparent;
   border-radius: 999px;
   padding-inline: 6px;
   min-height: 48px;
@@ -618,22 +619,102 @@ onBeforeUnmount(() => {
 
 @media (max-width: 1024px) {
   .bf-header-bar {
-    grid-template-columns: 1fr auto;
+    display: flex !important;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    min-height: 0;
     height: auto;
-    min-height: 86px;
-    padding: 8px 14px;
+    padding: 8px 10px 10px;
+  }
+
+  .bf-brand {
+    order: 1;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .bf-brand-logo {
+    width: 40px;
+    height: 40px;
+  }
+
+  .bf-brand-line {
+    font-size: 1.42rem;
   }
 
   .bf-nav {
-    grid-column: 1 / -1;
+    order: 3;
+    width: 100%;
     justify-content: flex-start;
-    gap: 24px;
+    gap: 14px;
     overflow-x: auto;
-    padding-bottom: 8px;
+    padding: 2px 0 4px;
+  }
+
+  .bf-nav-link {
+    font-size: 0.95rem;
+    padding: 6px 0;
+  }
+
+  .bf-actions {
+    order: 2;
+    margin-left: auto;
+    gap: 6px;
+  }
+
+  .bf-icon-btn {
+    min-height: 40px;
+    height: 40px;
+    width: 40px;
+    border: 1px solid #e8dbcb;
+    border-radius: 11px;
+    background: #fff;
+  }
+
+  .bf-icon-btn :deep(.q-btn__content .q-icon) {
+    font-size: 23px;
+  }
+
+  .bf-profile-trigger {
+    min-height: 40px;
+    height: 40px;
+    width: 40px;
+    border-radius: 11px;
+    border-color: #e8dbcb;
+    background: #fff;
+    padding-inline: 0;
+    justify-content: center;
+  }
+
+  .bf-profile-trigger-icon {
+    font-size: 23px;
   }
 
   .bf-profile-trigger-label {
     display: none;
+  }
+
+  .bf-profile-trigger-caret {
+    display: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .bf-brand-line {
+    font-size: 1.24rem;
+  }
+
+  .bf-brand-line-accent {
+    letter-spacing: 0.1em;
+  }
+
+  .bf-nav {
+    gap: 10px;
+  }
+
+  .bf-nav-link {
+    font-size: 0.9rem;
   }
 }
 </style>

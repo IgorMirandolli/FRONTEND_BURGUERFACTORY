@@ -1,7 +1,7 @@
 <template>
-  <q-page class="bf-menu-page">
+  <q-page class="bf-menu-page" :class="{ 'is-mobile': isMobile }">
     <div class="bf-shell">
-      <section class="bf-hero" id="home">
+      <section v-if="!isMobile" class="bf-hero" id="home">
         <div class="bf-hero-content">
           <div class="bf-hero-badge">
             <q-icon name="star" size="16px" />
@@ -58,13 +58,41 @@
         </div>
       </section>
 
-      <section class="bf-categories" aria-label="Categorias do cardapio">
+      <section v-else class="bf-mobile-hero" id="home">
+        <img :src="heroImageUrl" alt="Burger principal" class="bf-mobile-hero-image" />
+        <div class="bf-mobile-hero-overlay" />
+        <div class="bf-mobile-hero-content">
+          <p class="bf-mobile-hero-kicker">Burger Factory</p>
+          <h1 class="bf-mobile-hero-title">Seu burger favorito sem complicacao</h1>
+          <p class="bf-mobile-hero-subtitle">Escolha seu lanche e finalize em poucos toques.</p>
+          <div class="bf-mobile-hero-actions">
+            <q-btn
+              no-caps
+              unelevated
+              class="bf-mobile-hero-btn-primary"
+              icon="shopping_bag"
+              label="Ver cardapio"
+              @click="scrollToMenu"
+            />
+            <q-btn
+              no-caps
+              outline
+              class="bf-mobile-hero-btn-secondary"
+              icon="delivery_dining"
+              label="Pedir agora"
+              @click="goCheckout"
+            />
+          </div>
+        </div>
+      </section>
+
+      <section class="bf-categories" :class="{ 'is-mobile': isMobile }" aria-label="Categorias do cardapio">
         <button
           v-for="cat in categoriesBar"
           :key="cat.key"
           type="button"
           class="bf-category-btn"
-          :class="{ 'is-active': cat.key === activeCategory }"
+          :class="{ 'is-active': cat.key === activeCategory, 'is-mobile': isMobile }"
           @click="setActiveCategory(cat.key)"
         >
           <span class="bf-category-icon">
@@ -95,7 +123,7 @@
           {{ cartMessage }}
         </q-banner>
 
-        <div v-if="!loading && !errorMessage" class="bf-featured-grid">
+        <div v-if="!loading && !errorMessage && !isMobile" class="bf-featured-grid">
           <article v-for="item in visibleItems" :key="item.id" class="bf-featured-card">
             <div class="bf-featured-image-wrap">
               <img :src="resolveImageUrl(item.imageUrl)" :alt="item.name" class="bf-featured-image" />
@@ -118,28 +146,51 @@
             </div>
           </article>
         </div>
+
+        <div v-if="!loading && !errorMessage && isMobile" class="bf-mobile-menu-list">
+          <article v-for="item in visibleItems" :key="item.id" class="bf-mobile-menu-card">
+            <img :src="resolveImageUrl(item.imageUrl)" :alt="item.name" class="bf-mobile-menu-image" />
+            <div class="bf-mobile-menu-body">
+              <h3 class="bf-mobile-menu-title">{{ item.name }}</h3>
+              <p class="bf-mobile-menu-desc">{{ item.description || defaultDescription }}</p>
+              <div class="bf-mobile-menu-footer">
+                <span class="bf-mobile-menu-price">R$ {{ formatPrice(item.price) }}</span>
+                <q-btn
+                  no-caps
+                  unelevated
+                  class="bf-mobile-menu-add-btn"
+                  icon="add"
+                  label="Adicionar"
+                  :loading="addingItemId === item.id"
+                  @click="addToCart(item)"
+                />
+              </div>
+            </div>
+          </article>
+        </div>
       </section>
 
-      <section id="sobre" class="bf-about-block">
-  <h3 class="bf-about-title">Sobre a Burger Factory</h3>
-  
-  <p class="bf-about-text">
-    Na Burger Factory, acreditamos que um hamburguer vai muito alem de apenas matar a fome:
-    ele precisa ser uma experiencia. Trabalhamos com ingredientes selecionados, carnes
-    artesanais, combinacoes marcantes e um preparo pensado em cada detalhe para entregar
-    sabor, qualidade e aquela sensacao de satisfacao a cada pedido.
-  </p>
-  
-  <p class="bf-about-text">
-    Hoje atuamos exclusivamente atraves do delivery, levando nossos burgers ate voce com
-    praticidade, rapidez e o mesmo cuidado de uma hamburgueria premium.
-  </p>
-</section>
+      <section id="sobre" class="bf-about-block" :class="{ 'is-mobile': isMobile }">
+        <h3 class="bf-about-title">Sobre a Burger Factory</h3>
+
+        <p class="bf-about-text">
+          Na Burger Factory, acreditamos que um hamburguer vai muito alem de apenas matar a fome:
+          ele precisa ser uma experiencia. Trabalhamos com ingredientes selecionados, carnes
+          artesanais, combinacoes marcantes e um preparo pensado em cada detalhe para entregar
+          sabor, qualidade e aquela sensacao de satisfacao a cada pedido.
+        </p>
+
+        <p class="bf-about-text">
+          Hoje atuamos exclusivamente atraves do delivery, levando nossos burgers ate voce com
+          praticidade, rapidez e o mesmo cuidado de uma hamburgueria premium.
+        </p>
+      </section>
     </div>
   </q-page>
 </template>
 
 <script setup>
+import { useQuasar } from 'quasar'
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -147,7 +198,9 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 const heroImageUrl =
   'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=1800&q=80'
 
+const $q = useQuasar()
 const router = useRouter()
+const isMobile = computed(() => $q.screen.lt.md)
 
 const menuItems = ref([])
 const loading = ref(true)
@@ -659,6 +712,147 @@ onMounted(() => {
   color: #66574b;
 }
 
+.bf-mobile-hero {
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+  min-height: 360px;
+  margin-top: 10px;
+}
+
+.bf-mobile-hero-image {
+  width: 100%;
+  height: 100%;
+  min-height: 360px;
+  object-fit: cover;
+  display: block;
+}
+
+.bf-mobile-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(16, 10, 6, 0.22) 0%,
+    rgba(16, 10, 6, 0.74) 62%,
+    rgba(16, 10, 6, 0.9) 100%
+  );
+}
+
+.bf-mobile-hero-content {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  padding: 18px 14px 16px;
+}
+
+.bf-mobile-hero-kicker {
+  margin: 0;
+  color: #ffca8e;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+}
+
+.bf-mobile-hero-title {
+  margin: 8px 0 0;
+  color: #fff;
+  font-size: 1.9rem;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+.bf-mobile-hero-subtitle {
+  margin: 8px 0 0;
+  color: rgba(255, 246, 231, 0.92);
+  font-size: 0.96rem;
+}
+
+.bf-mobile-hero-actions {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.bf-mobile-hero-btn-primary {
+  background: #ef7b20;
+  color: #fff;
+  border-radius: 10px;
+  font-weight: 700;
+  min-height: 42px;
+}
+
+.bf-mobile-hero-btn-secondary {
+  border: 1px solid #ffd7b0;
+  color: #fff2e1;
+  border-radius: 10px;
+  min-height: 42px;
+}
+
+.bf-mobile-menu-list {
+  display: grid;
+  gap: 12px;
+}
+
+.bf-mobile-menu-card {
+  background: #fff;
+  border: 1px solid #efdccb;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.bf-mobile-menu-image {
+  width: 100%;
+  height: 170px;
+  object-fit: cover;
+  display: block;
+}
+
+.bf-mobile-menu-body {
+  padding: 11px 12px 12px;
+}
+
+.bf-mobile-menu-title {
+  margin: 0;
+  color: #251912;
+  font-size: 1.28rem;
+  line-height: 1.1;
+}
+
+.bf-mobile-menu-desc {
+  margin: 6px 0 10px;
+  color: #675a4f;
+  font-size: 0.92rem;
+  line-height: 1.34;
+}
+
+.bf-mobile-menu-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.bf-mobile-menu-price {
+  color: #ef7b20;
+  font-size: 1.6rem;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.bf-mobile-menu-add-btn {
+  background: #ef7b20;
+  color: #fff;
+  border-radius: 10px;
+  font-weight: 700;
+  min-height: 38px;
+  padding: 0 11px;
+}
+
 @media (max-width: 1200px) {
   .bf-featured-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -726,5 +920,60 @@ onMounted(() => {
   .bf-section-title {
     font-size: 1.85rem;
   }
+}
+
+.bf-menu-page.is-mobile .bf-shell {
+  padding: 0 10px;
+}
+
+.bf-categories.is-mobile {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  white-space: nowrap;
+  padding: 9px;
+  border-radius: 14px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.bf-categories.is-mobile::-webkit-scrollbar {
+  display: none;
+}
+
+.bf-category-btn.is-mobile {
+  min-height: 0;
+  min-width: 122px;
+  border: 1px solid #f0e2d2;
+  border-radius: 12px;
+  padding: 9px 10px;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+.bf-category-btn.is-mobile .bf-category-icon {
+  width: 44px;
+  height: 44px;
+}
+
+.bf-category-btn.is-mobile .bf-category-label {
+  font-size: 0.86rem;
+}
+
+.bf-menu-page.is-mobile .bf-menu-block {
+  margin-top: 16px;
+}
+
+.bf-menu-page.is-mobile .bf-section-title {
+  font-size: 1.45rem;
+}
+
+.bf-menu-page.is-mobile .bf-section-more {
+  font-size: 0.92rem;
+}
+
+.bf-about-block.is-mobile {
+  margin-top: 16px;
+  padding: 14px;
 }
 </style>

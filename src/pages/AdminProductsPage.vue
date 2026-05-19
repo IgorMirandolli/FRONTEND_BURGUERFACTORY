@@ -1469,4 +1469,91 @@ onBeforeUnmount(() => {
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 760px) {
+  .bf-admin-products-page {
+    padding-top: 14px;
+  }
+
+  .bf-admin-products-shell {
+    padding: 0 10px;
+  }
+
+  .bf-admin-head h1 {
+    font-size: 1.6rem;
+  }
+
+  .bf-admin-head p {
+    font-size: 0.9rem;
+  }
+
+  .bf-admin-nav {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .bf-admin-nav-btn {
+    width: 100%;
+    text-align: center;
+    padding: 8px 10px;
+  }
+
+  .bf-summary-card strong {
+    font-size: 1.2rem;
+  }
+
+  .bf-tab-strip {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 3px;
+  }
+
+  .bf-tab-item {
+    min-width: 82px;
+    min-height: 48px;
+    flex: 0 0 auto;
+  }
+
+  .bf-tab-item span {
+    font-size: 0.78rem;
+  }
+
+  .bf-tab-item small {
+    font-size: 0.72rem;
+  }
+
+  .bf-filters {
+    margin-top: 10px;
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .bf-filter-search,
+  .bf-filter-select {
+    min-width: 0;
+  }
+
+  .bf-admin-list-card {
+    padding: 10px;
+  }
+
+  .bf-table-footer p {
+    width: 100%;
+    font-size: 0.8rem;
+  }
+
+  .bf-table-footer-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .bf-page-size {
+    min-width: 104px;
+  }
+
+  .bf-admin-form-card {
+    padding: 12px;
+  }
+}
 </style>

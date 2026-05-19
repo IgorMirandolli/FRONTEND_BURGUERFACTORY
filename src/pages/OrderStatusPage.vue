@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <q-page class="orders-page q-pa-md q-pa-lg-xl">
     <q-banner v-if="errorMessage" class="bg-red-1 text-red-9 q-mb-md rounded-borders">
       {{ errorMessage }}
@@ -273,6 +273,139 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.orders-page {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.order-detail-sheet {
+  width: min(100%, 1120px);
+  margin: 0 auto;
+}
+
+.detail-top {
+  align-items: flex-start;
+}
+
+.detail-title {
+  line-height: 1.05;
+}
+
+.detail-subtitle {
+  line-height: 1.35;
+}
+
+.detail-step-text {
+  line-height: 1.2;
+}
+
+@media (max-width: 900px) {
+  .detail-top {
+    flex-direction: column;
+  }
+
+  .detail-eta-card {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-box-large {
+    grid-row: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .orders-page {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+
+  .detail-back {
+    padding: 6px 12px 0;
+  }
+
+  .detail-back-btn {
+    font-size: 0.88rem;
+  }
+
+  .detail-top {
+    padding-top: 8px;
+  }
+
+  .detail-title {
+    font-size: 1.65rem;
+  }
+
+  .detail-subtitle {
+    font-size: 0.92rem;
+  }
+
+  .detail-eta-label {
+    font-size: 0.86rem;
+  }
+
+  .detail-eta-value {
+    font-size: 1.5rem;
+  }
+
+  .detail-eta-clock {
+    font-size: 0.86rem;
+  }
+
+  .detail-timeline {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 6px;
+    padding-top: 0;
+  }
+
+  .detail-line {
+    display: none;
+  }
+
+  .detail-step-dot {
+    width: 34px;
+    height: 34px;
+    margin-bottom: 4px;
+  }
+
+  .detail-step-text {
+    font-size: 0.8rem;
+  }
+
+  .detail-alert {
+    padding: 8px 9px;
+  }
+
+  .detail-alert-title {
+    font-size: 0.95rem;
+  }
+
+  .detail-alert-sub {
+    font-size: 0.83rem;
+  }
+
+  .detail-box {
+    padding: 8px;
+  }
+
+  .detail-box-title {
+    font-size: 0.98rem;
+    margin-bottom: 6px;
+  }
+
+  .detail-text {
+    font-size: 0.88rem;
+  }
+
+  .detail-total {
+    font-size: 0.9rem;
+  }
+}
+
 .detail-line-active.is-live {
   position: absolute;
   overflow: hidden;

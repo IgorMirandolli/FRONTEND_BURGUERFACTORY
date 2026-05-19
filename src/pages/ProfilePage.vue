@@ -1708,9 +1708,93 @@ onMounted(() => {
 }
 
 @media (max-width: 980px) {
+  .bf-profile-page {
+    padding-top: 16px;
+  }
+
+  .bf-profile-shell {
+    padding: 0 12px;
+  }
+
+  .bf-profile-main {
+    gap: 14px;
+  }
+
+  .bf-side-menu-card {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 8px;
+  }
+
+  .bf-side-menu-card::-webkit-scrollbar {
+    display: none;
+  }
+
+  .bf-side-menu-item {
+    min-height: 44px;
+    min-width: max-content;
+    grid-template-columns: 18px auto;
+    gap: 6px;
+    font-size: 0.9rem;
+    border: 1px solid #efe0cf;
+    border-radius: 10px;
+    padding: 0 10px;
+    flex: 0 0 auto;
+  }
+
+  .bf-side-divider {
+    display: none;
+  }
+
+  .bf-side-promo {
+    display: none;
+  }
+
+  .bf-profile-header h1 {
+    font-size: 2.15rem;
+  }
+
+  .bf-profile-header p {
+    font-size: 0.95rem;
+    margin-top: 7px;
+  }
+
   .bf-profile-summary {
     grid-template-columns: 1fr;
     justify-items: flex-start;
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .bf-avatar {
+    width: 112px;
+    height: 112px;
+  }
+
+  .bf-user-meta h2 {
+    font-size: 1.58rem;
+  }
+
+  .bf-user-meta p {
+    font-size: 0.92rem;
+    margin-top: 6px;
+  }
+
+  .bf-edit-photo-btn {
+    min-height: 44px;
+    padding-inline: 14px;
+    font-size: 0.92rem;
+  }
+
+  .bf-section h2 {
+    font-size: 1.55rem;
+  }
+
+  .bf-form-card {
+    padding: 11px;
+    gap: 10px;
   }
 
   .bf-two-cols {
@@ -1719,24 +1803,62 @@ onMounted(() => {
 
   .bf-delete-card {
     grid-template-columns: 1fr;
+    padding: 12px;
+  }
+
+  .bf-delete-info {
+    grid-template-columns: 44px 1fr;
+    gap: 10px;
+  }
+
+  .bf-delete-icon {
+    width: 44px;
+    height: 44px;
+  }
+
+  .bf-delete-info strong {
+    font-size: 1.2rem;
+  }
+
+  .bf-delete-info p {
+    font-size: 0.92rem;
+  }
+
+  .bf-help-strip {
+    min-height: 48px;
+    padding: 8px 10px;
+    font-size: 0.92rem;
   }
 }
 
 @media (max-width: 680px) {
-  .bf-profile-shell {
-    padding: 0 12px;
-  }
-
   .bf-profile-header h1 {
-    font-size: 2.4rem;
+    font-size: 1.9rem;
   }
 
   .bf-section h2 {
-    font-size: 1.95rem;
+    font-size: 1.36rem;
   }
 
   .bf-user-meta h2 {
-    font-size: 2rem;
+    font-size: 1.35rem;
+  }
+
+  .bf-address-actions {
+    gap: 0;
+  }
+
+  .bf-address-actions :deep(.q-btn) {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .bf-form-actions {
+    justify-content: stretch;
+  }
+
+  .bf-form-actions :deep(.q-btn) {
+    width: 100%;
   }
 }
 </style>

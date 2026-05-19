@@ -1102,4 +1102,82 @@ onBeforeUnmount(() => {
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 760px) {
+  .bf-admin-page {
+    padding-top: 14px;
+  }
+
+  .bf-admin-shell {
+    padding: 0 10px;
+  }
+
+  .bf-admin-head h1 {
+    font-size: 1.6rem;
+  }
+
+  .bf-admin-head p {
+    font-size: 0.9rem;
+  }
+
+  .bf-admin-nav {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .bf-admin-nav-btn {
+    width: 100%;
+    text-align: center;
+    padding: 8px 10px;
+  }
+
+  .bf-toolbar {
+    margin-top: 12px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .bf-tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 4px;
+  }
+
+  .bf-tab-btn {
+    white-space: nowrap;
+    padding: 9px 8px;
+    font-size: 0.85rem;
+  }
+
+  .bf-toolbar-right {
+    justify-content: space-between;
+  }
+
+  .bf-date-box {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .bf-date-input {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .bf-refresh-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .bf-table-footer p {
+    width: 100%;
+    font-size: 0.8rem;
+  }
+
+  .bf-footer-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
 </style>

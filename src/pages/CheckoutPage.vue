@@ -917,6 +917,34 @@ onMounted(() => {
     padding: 0 12px;
   }
 
+  .bf-page-head {
+    margin-top: 10px;
+    margin-bottom: 14px;
+  }
+
+  .bf-page-title {
+    font-size: 1.7rem;
+  }
+
+  .bf-page-subtitle {
+    font-size: 0.95rem;
+    margin-top: 7px;
+  }
+
+  .bf-block {
+    padding: 12px 10px;
+  }
+
+  .bf-block-head h2 {
+    font-size: 1.34rem;
+  }
+
+  .bf-step {
+    width: 27px;
+    height: 27px;
+    font-size: 0.85rem;
+  }
+
   .bf-two-cols,
   .bf-three-cols,
   .bf-two-cols-city {
@@ -930,6 +958,48 @@ onMounted(() => {
   .bf-summary-price {
     grid-column: 2;
     margin-top: 2px;
+  }
+}
+
+@media (max-width: 520px) {
+  .bf-checkout-page {
+    padding-top: 14px;
+  }
+
+  .bf-checkout-shell {
+    padding: 0 10px;
+  }
+
+  .bf-back-link {
+    font-size: 0.92rem;
+    gap: 6px;
+  }
+
+  .bf-payment-item {
+    grid-template-columns: 20px 24px 1fr;
+    gap: 8px;
+    min-height: 62px;
+    padding: 10px 9px;
+  }
+
+  .bf-payment-badge {
+    grid-column: 1 / -1;
+    justify-self: flex-start;
+    margin-left: 28px;
+    margin-top: -2px;
+  }
+
+  .bf-summary-card {
+    padding: 11px;
+  }
+
+  .bf-summary-title {
+    font-size: 1.4rem;
+  }
+
+  .bf-confirm-btn {
+    height: 48px;
+    font-size: 1rem;
   }
 }
 </style>
