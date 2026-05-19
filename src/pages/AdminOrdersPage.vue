@@ -113,7 +113,7 @@
           Nenhum pedido encontrado para esse filtro.
         </div>
 
-        <template v-else>
+        <template v-else-if="!isMobile">
           <div class="bf-table-wrap">
             <table class="bf-orders-table">
               <thead>
@@ -199,9 +199,107 @@
               <q-pagination
                 v-model="currentPage"
                 :max="totalPages"
-                :max-pages="6"
-                direction-links
-                boundary-links
+                :max-pages="isMobile ? 4 : 6"
+                :direction-links="!isMobile"
+                :boundary-links="!isMobile"
+                color="deep-orange-8"
+                active-color="deep-orange-8"
+                active-design="unelevated"
+                unelevated
+              />
+
+              <q-select
+                v-model="pageSize"
+                :options="pageSizeOptions"
+                emit-value
+                map-options
+                dense
+                outlined
+                class="bf-page-size"
+              />
+            </div>
+          </footer>
+        </template>
+
+        <template v-else>
+          <div class="bf-mobile-order-list">
+            <article v-for="order in paginatedOrders" :key="order.id" class="bf-mobile-order-card">
+              <div class="bf-mobile-order-head">
+                <div>
+                  <strong>#{{ order.id }}</strong>
+                  <small>{{ formatDate(order.created_at) }} {{ formatTime(order.created_at) }}</small>
+                </div>
+                <span class="bf-status-pill" :class="`is-${getOrderStatus(order)}`">
+                  {{ statusLabel(getOrderStatus(order)) }}
+                </span>
+              </div>
+
+              <div class="bf-mobile-order-grid">
+                <div>
+                  <p class="bf-mobile-order-label">Cliente</p>
+                  <p class="bf-mobile-order-value">{{ order.customer_name || '-' }}</p>
+                  <p class="bf-mobile-order-sub">{{ order.customer_phone || '-' }}</p>
+                </div>
+
+                <div>
+                  <p class="bf-mobile-order-label">Pagamento</p>
+                  <p class="bf-mobile-order-value">{{ paymentLabel(order.payment_method) }}</p>
+                  <p class="bf-mobile-order-total">R$ {{ formatPrice(order.total_amount) }}</p>
+                </div>
+              </div>
+
+              <div class="bf-mobile-order-actions">
+                <q-btn
+                  flat
+                  no-caps
+                  color="grey-8"
+                  label="Ver detalhes"
+                  class="bf-mobile-action-btn"
+                  @click="openOrderPreview(order)"
+                />
+
+                <q-btn-dropdown
+                  no-caps
+                  unelevated
+                  color="deep-orange-8"
+                  class="bf-mobile-action-btn"
+                  :label="updatingOrderId === order.id ? 'Atualizando...' : 'Alterar status'"
+                  :disable="updatingOrderId === order.id"
+                >
+                  <q-list>
+                    <q-item
+                      v-for="statusOption in statusUpdateOptions"
+                      :key="`${order.id}-${statusOption.value}`"
+                      clickable
+                      v-close-popup
+                      :disable="!canTransitionUi(getOrderStatus(order), statusOption.value)"
+                      @click="updateOrderStatus(order.id, statusOption.value)"
+                    >
+                      <q-item-section avatar>
+                        <span class="bf-status-dot" :class="`is-${statusOption.value}`"></span>
+                      </q-item-section>
+                      <q-item-section>
+                        <q-item-label>{{ statusOption.label }}</q-item-label>
+                      </q-item-section>
+                    </q-item>
+                  </q-list>
+                </q-btn-dropdown>
+              </div>
+            </article>
+          </div>
+
+          <footer class="bf-table-footer">
+            <p>
+              Mostrando {{ showingStart }} a {{ showingEnd }} de {{ filteredOrders.length }} pedidos
+            </p>
+
+            <div class="bf-footer-right">
+              <q-pagination
+                v-model="currentPage"
+                :max="totalPages"
+                :max-pages="isMobile ? 4 : 6"
+                :direction-links="!isMobile"
+                :boundary-links="!isMobile"
                 color="deep-orange-8"
                 active-color="deep-orange-8"
                 active-design="unelevated"
@@ -286,12 +384,14 @@
 </template>
 
 <script setup>
+import { useQuasar } from 'quasar'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 const POLLING_INTERVAL_MS = 4000
 
+const $q = useQuasar()
 const NEXT_STATUS_BY_CURRENT = {
   pending: 'preparing',
   preparing: 'on_the_way',
@@ -299,6 +399,7 @@ const NEXT_STATUS_BY_CURRENT = {
 }
 
 const router = useRouter()
+const isMobile = computed(() => $q.screen.lt.md)
 
 const loading = ref(false)
 const requestInFlight = ref(false)
@@ -673,12 +774,14 @@ onBeforeUnmount(() => {
     #f2efea;
   min-height: 100vh;
   padding: 22px 0 34px;
+  overflow-x: hidden;
 }
 
 .bf-admin-shell {
   max-width: 1500px;
   margin: 0 auto;
   padding: 0 16px;
+  overflow-x: hidden;
 }
 
 .bf-admin-head {
@@ -830,6 +933,7 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+  margin-left: auto;
 }
 
 .bf-date-box {
@@ -841,6 +945,8 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 6px;
   padding: 0 10px;
+  flex: 1 1 320px;
+  max-width: 460px;
 }
 
 .bf-date-box span {
@@ -854,11 +960,16 @@ onBeforeUnmount(() => {
   background: transparent;
   color: #3a332d;
   font-size: 0.88rem;
+  min-width: 0;
+  width: 100%;
 }
 
 .bf-refresh-btn {
   border: 1px solid #ddd3c8;
   border-radius: 9px;
+  min-height: 42px;
+  padding: 0 14px;
+  white-space: nowrap;
 }
 
 .bf-table-card {
@@ -1030,6 +1141,85 @@ onBeforeUnmount(() => {
   font-size: 0.96rem;
 }
 
+.bf-mobile-order-list {
+  display: grid;
+  gap: 10px;
+  padding: 10px;
+}
+
+.bf-mobile-order-card {
+  border: 1px solid #ebdfd1;
+  border-radius: 12px;
+  background: #fffefc;
+  padding: 10px;
+  display: grid;
+  gap: 9px;
+}
+
+.bf-mobile-order-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.bf-mobile-order-head strong {
+  display: block;
+  color: #2d2621;
+  font-size: 1rem;
+}
+
+.bf-mobile-order-head small {
+  display: block;
+  color: #857c72;
+  font-size: 0.8rem;
+  margin-top: 2px;
+}
+
+.bf-mobile-order-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.bf-mobile-order-label {
+  margin: 0;
+  color: #7b7268;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.bf-mobile-order-value {
+  margin: 2px 0 0;
+  color: #2f2822;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.bf-mobile-order-sub {
+  margin: 2px 0 0;
+  color: #8b8177;
+  font-size: 0.8rem;
+}
+
+.bf-mobile-order-total {
+  margin: 4px 0 0;
+  color: #d24f21;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.bf-mobile-order-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.bf-mobile-action-btn {
+  width: 100%;
+  border-radius: 9px;
+}
+
 .bf-preview-card {
   width: min(92vw, 560px);
 }
@@ -1101,6 +1291,11 @@ onBeforeUnmount(() => {
   .bf-metric-grid {
     grid-template-columns: 1fr;
   }
+
+  .bf-mobile-order-grid,
+  .bf-mobile-order-actions {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 760px) {
@@ -1140,33 +1335,43 @@ onBeforeUnmount(() => {
   }
 
   .bf-tabs {
-    overflow-x: auto;
-    flex-wrap: nowrap;
+    overflow-x: hidden;
+    flex-wrap: wrap;
     padding-bottom: 4px;
   }
 
   .bf-tab-btn {
-    white-space: nowrap;
+    white-space: normal;
     padding: 9px 8px;
     font-size: 0.85rem;
   }
 
   .bf-toolbar-right {
-    justify-content: space-between;
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
   }
 
   .bf-date-box {
     width: 100%;
-    justify-content: space-between;
+    max-width: 100%;
+    flex: 1 1 auto;
+    padding: 6px 10px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 6px;
   }
 
   .bf-date-input {
-    width: 100%;
     min-width: 0;
+    width: 100%;
   }
 
   .bf-refresh-btn {
     width: 100%;
+    min-height: 44px;
     justify-content: center;
   }
 
@@ -1177,7 +1382,31 @@ onBeforeUnmount(() => {
 
   .bf-footer-right {
     width: 100%;
-    justify-content: space-between;
+    justify-content: flex-start;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .bf-footer-right :deep(.q-pagination) {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .bf-page-size {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 520px) {
+  .bf-date-box {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .bf-date-box span {
+    display: none;
   }
 }
 </style>

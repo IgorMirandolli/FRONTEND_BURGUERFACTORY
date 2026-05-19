@@ -101,7 +101,7 @@
             Nenhum produto encontrado com esses filtros.
           </div>
 
-          <template v-else>
+          <template v-else-if="!isMobile">
             <div class="bf-table-wrap">
               <table class="bf-products-table">
                 <thead>
@@ -167,6 +167,88 @@
                   </tr>
                 </tbody>
               </table>
+            </div>
+
+            <footer class="bf-table-footer">
+              <p>Mostrando {{ showingRangeText }} de {{ totalProducts }} produtos</p>
+              <div class="bf-table-footer-actions">
+                <q-pagination
+                  v-model="currentPage"
+                  :max="totalPages"
+                  :max-pages="6"
+                  direction-links
+                  boundary-links
+                  color="deep-orange-8"
+                  active-color="deep-orange-8"
+                  active-design="unelevated"
+                  unelevated
+                  @update:model-value="loadProducts"
+                />
+
+                <q-select
+                  v-model="pageSize"
+                  :options="pageSizeOptions"
+                  emit-value
+                  map-options
+                  outlined
+                  dense
+                  class="bf-page-size"
+                  @update:model-value="handlePageSizeChange"
+                />
+              </div>
+            </footer>
+          </template>
+
+          <template v-else>
+            <div class="bf-mobile-product-list">
+              <article v-for="product in products" :key="product.id" class="bf-mobile-product-card">
+                <div class="bf-mobile-product-head">
+                  <div class="bf-mobile-product-main">
+                    <q-avatar rounded size="52px" class="bf-product-thumb">
+                      <img
+                        v-if="product.imageUrl"
+                        :src="resolveImageUrl(product.imageUrl)"
+                        :alt="product.name"
+                      />
+                      <q-icon v-else name="fastfood" size="22px" />
+                    </q-avatar>
+
+                    <div>
+                      <strong>{{ product.name }}</strong>
+                      <small>{{ product.description || 'Sem descricao cadastrada.' }}</small>
+                    </div>
+                  </div>
+
+                  <q-btn
+                    flat
+                    dense
+                    round
+                    color="grey-8"
+                    icon="edit"
+                    @click="startEditProduct(product)"
+                  />
+                </div>
+
+                <div class="bf-mobile-product-grid">
+                  <span class="bf-category-chip">{{ product.category_name }}</span>
+                  <strong class="bf-mobile-product-price">R$ {{ formatPrice(product.price) }}</strong>
+                </div>
+
+                <div class="bf-mobile-product-status">
+                  <span
+                    class="bf-status-pill"
+                    :class="product.is_available ? 'is-active' : 'is-inactive'"
+                  >
+                    {{ product.is_available ? 'Ativo' : 'Inativo' }}
+                  </span>
+                  <q-toggle
+                    :model-value="product.is_available"
+                    color="deep-orange-8"
+                    :disable="isToggleLoading(product.id)"
+                    @update:model-value="(value) => updateProductAvailability(product, value)"
+                  />
+                </div>
+              </article>
             </div>
 
             <footer class="bf-table-footer">
@@ -327,6 +409,7 @@
 </template>
 
 <script setup>
+import { useQuasar } from 'quasar'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -334,7 +417,9 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 const REFRESH_INTERVAL_MS = 8000
 const MAX_PRODUCT_IMAGE_BYTES = 5 * 1024 * 1024
 
+const $q = useQuasar()
 const router = useRouter()
+const isMobile = computed(() => $q.screen.lt.md)
 
 const loadingProducts = ref(false)
 const loadingCategories = ref(false)
@@ -1186,6 +1271,69 @@ onBeforeUnmount(() => {
   font-size: 0.95rem;
 }
 
+.bf-mobile-product-list {
+  margin-top: 10px;
+  display: grid;
+  gap: 10px;
+}
+
+.bf-mobile-product-card {
+  border: 1px solid #ebdfd1;
+  border-radius: 12px;
+  background: #fffefc;
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.bf-mobile-product-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.bf-mobile-product-main {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 8px;
+  min-width: 0;
+}
+
+.bf-mobile-product-main strong {
+  display: block;
+  color: #322921;
+  font-size: 0.92rem;
+  line-height: 1.2;
+}
+
+.bf-mobile-product-main small {
+  display: block;
+  margin-top: 2px;
+  color: #8a7e72;
+  font-size: 0.78rem;
+  line-height: 1.3;
+}
+
+.bf-mobile-product-grid {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.bf-mobile-product-price {
+  color: #2d2621;
+  font-size: 0.96rem;
+}
+
+.bf-mobile-product-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .bf-table-wrap {
   margin-top: 10px;
   overflow-x: auto;
@@ -1554,6 +1702,16 @@ onBeforeUnmount(() => {
 
   .bf-admin-form-card {
     padding: 12px;
+  }
+
+  .bf-mobile-product-grid {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .bf-mobile-product-status {
+    border-top: 1px solid #f0e7dc;
+    padding-top: 7px;
   }
 }
 </style>

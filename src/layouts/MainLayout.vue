@@ -112,7 +112,7 @@
           <q-item v-for="item in cartItems" :key="item.id" class="q-px-none">
             <q-item-section avatar>
               <q-avatar rounded size="54px">
-                <img :src="item.imageUrl" :alt="item.name" />
+                <img :src="resolveImageUrl(item.imageUrl)" :alt="item.name" />
               </q-avatar>
             </q-item-section>
             <q-item-section>
@@ -257,6 +257,19 @@ function goCheckout() {
 
 function formatPrice(value) {
   return Number(value || 0).toFixed(2).replace('.', ',')
+}
+
+function resolveImageUrl(imageUrl) {
+  if (!imageUrl) return `${API_BASE_URL}/menu/combo-smash.webp`
+  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) return imageUrl
+
+  const normalized = imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`
+
+  if (normalized.startsWith('/menu/') || normalized.startsWith('/uploads/')) {
+    return `${API_BASE_URL}${normalized}`
+  }
+
+  return normalized
 }
 
 function getOrCreateGuestSessionId() {
