@@ -1,8 +1,7 @@
-# 🍔 Burger Factory — Frontend
-
+﻿# 🍔 Burger Factory — Frontend
 
 <p align="center">
-  <img src="./src/assets/logoburguerfactory.png" width="260"/>
+  <img src="./src/assets/logoburguerfactory.png" width="260" alt="Burger Factory logo" />
 </p>
 
 <p align="center">
@@ -20,7 +19,7 @@
 
 Frontend oficial da **Burger Factory**, desenvolvido com **Quasar Framework + Vue 3**, consumindo a API do backend Node.js/Express.
 
-A aplicação foi criada com foco em performance, organização e experiência moderna para delivery de hamburgueria.
+A aplicação foi criada com foco em performance, organização, experiência moderna e fluxo completo de delivery, incluindo cliente, checkout e painel administrativo.
 
 ---
 
@@ -30,8 +29,10 @@ A aplicação foi criada com foco em performance, organização e experiência m
 - Vue 3
 - Vue Router
 - Pinia
-- Axios
+- Fetch API
 - Sass (SCSS)
+- ESLint
+- Prettier
 
 ---
 
@@ -56,7 +57,7 @@ git clone https://github.com/SEU_USUARIO/burger-factory-frontend.git
 Acesse a pasta:
 
 ```bash
-cd frontend
+cd FRONTEND_BURGUERFACTORY
 ```
 
 Instale as dependências:
@@ -79,6 +80,12 @@ na raiz do projeto:
 
 ```env
 VITE_API_URL=http://localhost:3000
+```
+
+Caso não seja definido, o frontend utilizará fallback automático para:
+
+```text
+http://localhost:3000
 ```
 
 ---
@@ -115,13 +122,23 @@ npm run lint
 
 ---
 
+## 🔹 Formatação
+
+```bash
+npm run format
+```
+
+---
+
 # 📁 Estrutura do projeto
 
 ```text
-frontend/
+FRONTEND_BURGUERFACTORY/
+│
+├── docs/
+│   └── screenshots/
 │
 ├── public/
-│   └── menu/
 │
 ├── src/
 │   ├── assets/
@@ -135,7 +152,14 @@ frontend/
 │   │
 │   ├── pages/
 │   │   ├── LoginPage.vue
+│   │   ├── RegisterPage.vue
 │   │   ├── MenuPage.vue
+│   │   ├── CheckoutPage.vue
+│   │   ├── OrdersPage.vue
+│   │   ├── OrderStatusPage.vue
+│   │   ├── ProfilePage.vue
+│   │   ├── AdminOrdersPage.vue
+│   │   ├── AdminProductsPage.vue
 │   │   └── ErrorNotFound.vue
 │   │
 │   ├── router/
@@ -144,19 +168,35 @@ frontend/
 │   │
 │   └── stores/
 │
-└── quasar.config.js
+├── quasar.config.js
+└── package.json
 ```
 
 ---
 
 # 🌐 Rotas da aplicação
 
-| Rota | Descrição |
-|---|---|
-| `/login` | Tela de login |
-| `/lanches` | Página principal |
-| `/lanches#menu` | Sessão do cardápio |
-| `/lanches#sobre` | Sessão sobre a hamburgueria |
+> O projeto utiliza `vueRouterMode: 'hash'`.
+
+Exemplo local:
+
+```text
+http://localhost:9000/#/lanches
+```
+
+| Rota | Página | Acesso |
+|---|---|---|
+| `/` | Redireciona para `/lanches` | Público |
+| `/login` | Login | Público |
+| `/register` | Cadastro | Público |
+| `/lanches` | Cardápio | Público |
+| `/checkout` | Checkout | Público |
+| `/pedidos` | Lista de pedidos | Público |
+| `/pedidos/:orderId` | Acompanhamento do pedido | Público |
+| `/perfil` | Perfil do usuário | Logado |
+| `/admin` | Redireciona para `/admin/pedidos` | Admin |
+| `/admin/pedidos` | Painel admin de pedidos | Admin |
+| `/admin/produtos` | Painel admin de produtos | Admin |
 
 ---
 
@@ -182,6 +222,8 @@ VITE_API_URL=http://localhost:3000
 
 ```http
 POST /api/auth/login
+POST /api/auth/register
+GET  /api/auth/verify
 ```
 
 ---
@@ -194,11 +236,76 @@ GET /api/menu
 
 ---
 
+## 🛒 Carrinho
+
+```http
+GET    /api/cart
+POST   /api/cart/items
+PATCH  /api/cart/items/:itemId
+DELETE /api/cart/items/:itemId
+POST   /api/cart/checkout
+```
+
+---
+
+## 📦 Pedidos
+
+```http
+GET /api/orders
+GET /api/orders/:orderId
+```
+
+---
+
+## 👤 Perfil
+
+```http
+GET    /api/profile
+PUT    /api/profile
+DELETE /api/profile
+
+PUT /api/profile/password
+PUT /api/profile/avatar
+```
+
+---
+
+## 📍 Endereços
+
+```http
+GET    /api/profile/addresses
+POST   /api/profile/addresses
+PUT    /api/profile/addresses/:id
+DELETE /api/profile/addresses/:id
+
+PUT /api/profile/addresses/:id/default
+```
+
+---
+
+## ⚙️ Administração
+
+```http
+GET   /api/admin/orders
+PATCH /api/admin/orders/:orderId/status
+
+GET   /api/admin/categories
+
+GET   /api/admin/products
+POST  /api/admin/products
+PUT   /api/admin/products/:id
+
+PATCH /api/admin/products/:id/status
+```
+
+---
+
 # 🔐 Fluxo de autenticação
 
 ## ✅ Login com conta
 
 1. Usuário acessa:
+
 ```text
 /login
 ```
@@ -241,21 +348,43 @@ Com:
 
 O usuário pode navegar como visitante.
 
-Ao clicar em:
+Ao acessar sem login, o frontend cria:
 
 ```text
-Entrar sem conta
+bf_guest_session_id
 ```
 
-O frontend salva:
+E mantém carrinho/pedidos vinculados à sessão visitante.
 
-```json
-{
-  "mode": "guest",
-  "token": null,
-  "user": null
-}
+---
+
+# 🛒 Fluxo do carrinho
+
+O sistema utiliza:
+
+```text
+localStorage
 ```
+
+para persistência de sessão e carrinho.
+
+## Chaves utilizadas
+
+| Chave | Função |
+|---|---|
+| `bf_session` | Sessão autenticada ou visitante |
+| `bf_guest_session_id` | Identificador do visitante |
+| `bf_remember_email` | Email salvo no login |
+
+---
+
+## Evento global
+
+```text
+bf-cart-updated
+```
+
+Utilizado para sincronizar o drawer do carrinho entre páginas.
 
 ---
 
@@ -273,6 +402,79 @@ organiza os produtos nesta ordem:
 2. Hambúrgueres
 3. Fritas
 4. Bebidas
+5. Sobremesas
+
+---
+
+# 💳 Checkout
+
+O checkout suporta:
+
+- Usuário logado
+- Visitante
+- Carrinho persistente
+- Validação de telefone
+- Validação de CEP
+- Pagamento via:
+  - Pix
+  - Cartão
+  - Dinheiro
+
+Também utiliza:
+
+```http
+X-Idempotency-Key
+```
+
+para evitar pedidos duplicados.
+
+---
+
+# 📦 Pedidos
+
+O usuário pode:
+
+- visualizar pedidos anteriores
+- acompanhar status em tempo real
+- visualizar barra de progresso do pedido
+
+---
+
+# 👤 Perfil do usuário
+
+A tela de perfil permite:
+
+- editar dados pessoais
+- alterar senha
+- enviar avatar
+- gerenciar endereços
+- definir endereço padrão
+
+---
+
+# ⚙️ Painel administrativo
+
+## 📦 Pedidos
+
+O admin pode:
+
+- filtrar pedidos
+- atualizar status
+- confirmar entregas
+- acompanhar atualizações automáticas
+
+---
+
+## 🍔 Produtos
+
+O admin pode:
+
+- criar produtos
+- editar produtos
+- fazer upload de imagem
+- ativar/inativar produtos
+- controlar ordenação (`display_order`)
+- buscar e filtrar produtos
 
 ---
 
@@ -301,19 +503,246 @@ Cada produto utiliza:
 public/menu/
 ```
 
----
-
-## ✅ Exemplo no banco
+ou:
 
 ```text
-menu/factory-smash.webp
+/uploads/
 ```
 
-O backend normaliza automaticamente para:
+---
+
+## ✅ Exemplos
 
 ```text
 /menu/factory-smash.webp
+/uploads/products/item.webp
 ```
+
+O frontend monta automaticamente a URL completa usando:
+
+```env
+VITE_API_URL
+```
+
+---
+
+# 📸 Screenshots das interfaces
+
+Adicione as imagens em:
+
+```text
+docs/screenshots/
+```
+
+---
+
+## 🔐 Login — Desktop
+
+<img
+  src="./docs/screenshots/login-desktop.png"
+  alt="Tela de login desktop"
+  width="100%"
+/>
+
+---
+
+## 📱 Login — Mobile
+
+<img
+  src="./docs/screenshots/login-mobile.png"
+  alt="Tela de login mobile"
+  width="350"
+/>
+
+---
+
+## 🖥️ Cardápio — Desktop
+
+<img
+  src="./docs/screenshots/cardapio-desktop.png"
+  alt="Cardápio desktop"
+  width="100%"
+/>
+
+---
+
+## 📱 Cardápio — Mobile
+
+<img
+  src="./docs/screenshots/cardapio-mobile.png"
+  alt="Cardápio mobile"
+  width="350"
+/>
+
+---
+
+## 🖥️ Menu — Desktop
+
+<img
+  src="./docs/screenshots/menu-desktop.png"
+  alt="Menu desktop"
+  width="100%"
+/>
+
+---
+
+## 🛒 Carrinho e Checkout — Desktop
+
+<img
+  src="./docs/screenshots/cart-checkout-desktop.png"
+  alt="Carrinho e checkout desktop"
+  width="100%"
+/>
+
+<br />
+
+<img
+  src="./docs/screenshots/cart-checkout-desktop2.png"
+  alt="Carrinho e checkout desktop 2"
+  width="100%"
+/>
+
+---
+
+## 📱 Carrinho e Checkout — Mobile
+
+<img
+  src="./docs/screenshots/cart-checkout-mobile.png"
+  alt="Carrinho e checkout mobile"
+  width="350"
+/>
+
+<br />
+
+<img
+  src="./docs/screenshots/cart-checkout-mobile2.png"
+  alt="Carrinho e checkout mobile 2"
+  width="350"
+/>
+
+---
+
+## 📦 Pedidos — Desktop
+
+<img
+  src="./docs/screenshots/pedidos-desktop.png"
+  alt="Pedidos desktop"
+  width="100%"
+/>
+
+---
+
+## 📱 Pedidos — Mobile
+
+<img
+  src="./docs/screenshots/pedidos-mobile.png"
+  alt="Pedidos mobile"
+  width="350"
+/>
+
+---
+
+## 📦 Status do Pedido — Desktop
+
+<img
+  src="./docs/screenshots/status-desktop.png"
+  alt="Status do pedido desktop"
+  width="100%"
+/>
+
+---
+
+## 📱 Status do Pedido — Mobile
+
+<img
+  src="./docs/screenshots/status-mobile.png"
+  alt="Status do pedido mobile"
+  width="350"
+/>
+
+---
+
+## ⚙️ Admin — Pedidos Desktop
+
+<img
+  src="./docs/screenshots/admin-pedidos-desktop.png"
+  alt="Painel admin pedidos desktop"
+  width="100%"
+/>
+
+---
+
+## 📱 Admin — Pedidos Mobile
+
+<img
+  src="./docs/screenshots/admin-pedidos-mobile.png"
+  alt="Painel admin pedidos mobile"
+  width="350"
+/>
+
+---
+
+## 🍔 Admin — Produtos Desktop
+
+<img
+  src="./docs/screenshots/admin-produtos-desktop.png"
+  alt="Painel admin produtos desktop"
+  width="100%"
+/>
+
+<br />
+
+<img
+  src="./docs/screenshots/admin-produtos-desktop2.png"
+  alt="Painel admin produtos desktop 2"
+  width="100%"
+/>
+
+---
+
+## 📱 Admin — Produtos Mobile
+
+<img
+  src="./docs/screenshots/admin-produtos-mobile.png"
+  alt="Painel admin produtos mobile"
+  width="350"
+/>
+
+<br />
+
+<img
+  src="./docs/screenshots/admin-produtos-mobile2.png"
+  alt="Painel admin produtos mobile 2"
+  width="350"
+/>
+
+<br />
+
+<img
+  src="./docs/screenshots/admin-produtos-mobile3.png"
+  alt="Painel admin produtos mobile 3"
+  width="350"
+/>
+
+---
+
+## 👤 Perfil — Desktop
+
+<img
+  src="./docs/screenshots/perfil-desktop.png"
+  alt="Perfil desktop"
+  width="100%"
+/>
+
+---
+
+## 📱 Perfil — Mobile
+
+<img
+  src="./docs/screenshots/perfil-mobile.png"
+  alt="Perfil mobile"
+  width="350"
+/>
 
 ---
 
@@ -325,16 +754,18 @@ Visível em todas as páginas, exceto:
 
 ```text
 /login
+/register
 ```
 
 ---
 
-## Navegação do topo
+## Navegação principal
 
 | Link | Destino |
 |---|---|
-| Cardápio | `/lanches#menu` |
-| Sobre | `/lanches#sobre` |
+| Cardápio | `/lanches` |
+| Pedidos | `/pedidos` |
+| Perfil | `/perfil` |
 | Entrar | `/login` |
 
 ---
@@ -362,7 +793,7 @@ Você provavelmente está fora da pasta do frontend.
 Execute os comandos dentro de:
 
 ```text
-FRONTEND_BURGERFACTORY
+FRONTEND_BURGUERFACTORY
 ```
 
 ---
@@ -382,11 +813,56 @@ Verifique:
 Confirme:
 
 - retorno correto da API
-- existência das imagens em:
+- backend servindo:
+  - `/menu`
+  - `/uploads`
+
+---
+
+## ❌ 401/403 em rotas admin
+
+Confirme se:
+
+```json
+{
+  "mode": "auth",
+  "user": {
+    "role": "admin"
+  }
+}
+```
+
+está salvo em:
 
 ```text
-public/menu/
+bf_session
 ```
+
+---
+
+## ❌ Carrinho de visitante não funciona
+
+Verifique se:
+
+```text
+bf_guest_session_id
+```
+
+foi criado corretamente no navegador.
+
+---
+
+# 🚀 Próximos passos
+
+- Integração com gateway de pagamento
+- Notificações em tempo real
+- Dashboard analítico
+- Sistema de cupons
+- PWA/mobile
+- Upload múltiplo de imagens
+- Relatórios administrativos
+- Melhorias de performance
+- Dark mode
 
 ---
 
@@ -401,27 +877,13 @@ public/menu/
 
 ---
 
-# 🚀 Próximos passos
-
-- Filtro por categorias
-- Página de detalhes do produto
-- Carrinho persistente
-- Checkout
-- Integração com pagamentos
-- Área administrativa
-- Dashboard de pedidos
-- Responsividade avançada
-- PWA/mobile
-
----
-
 # 📄 Licença
 
 Este projeto está sob a licença MIT.
 
 ---
 
-# 👨‍💻 Desenvolvedores
+# 👨‍💻 Desenvolvedor
 
 Desenvolvido por **Igor Mirandolli**
 

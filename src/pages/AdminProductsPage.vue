@@ -175,9 +175,9 @@
                 <q-pagination
                   v-model="currentPage"
                   :max="totalPages"
-                  :max-pages="6"
-                  direction-links
-                  boundary-links
+                  :max-pages="isMobile ? 4 : 6"
+                  :direction-links="!isMobile"
+                  :boundary-links="!isMobile"
                   color="deep-orange-8"
                   active-color="deep-orange-8"
                   active-design="unelevated"
@@ -257,9 +257,9 @@
                 <q-pagination
                   v-model="currentPage"
                   :max="totalPages"
-                  :max-pages="6"
-                  direction-links
-                  boundary-links
+                  :max-pages="isMobile ? 4 : 6"
+                  :direction-links="!isMobile"
+                  :boundary-links="!isMobile"
                   color="deep-orange-8"
                   active-color="deep-orange-8"
                   active-design="unelevated"
@@ -1066,12 +1066,14 @@ onBeforeUnmount(() => {
     #f2eeea;
   min-height: 100vh;
   padding: 22px 0 34px;
+  overflow-x: hidden;
 }
 
 .bf-admin-products-shell {
   max-width: 1500px;
   margin: 0 auto;
   padding: 0 16px;
+  overflow-x: hidden;
 }
 
 .bf-admin-head {
@@ -1652,15 +1654,15 @@ onBeforeUnmount(() => {
   }
 
   .bf-tab-strip {
-    overflow-x: auto;
-    flex-wrap: nowrap;
+    overflow-x: hidden;
+    flex-wrap: wrap;
     padding-bottom: 3px;
   }
 
   .bf-tab-item {
-    min-width: 82px;
+    min-width: 0;
     min-height: 48px;
-    flex: 0 0 auto;
+    flex: 1 1 calc(50% - 6px);
   }
 
   .bf-tab-item span {
@@ -1693,11 +1695,20 @@ onBeforeUnmount(() => {
 
   .bf-table-footer-actions {
     width: 100%;
-    justify-content: space-between;
+    justify-content: flex-start;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
   }
 
   .bf-page-size {
-    min-width: 104px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .bf-table-footer-actions :deep(.q-pagination) {
+    width: 100%;
+    justify-content: center;
   }
 
   .bf-admin-form-card {
@@ -1712,6 +1723,12 @@ onBeforeUnmount(() => {
   .bf-mobile-product-status {
     border-top: 1px solid #f0e7dc;
     padding-top: 7px;
+  }
+}
+
+@media (max-width: 520px) {
+  .bf-tab-item {
+    flex-basis: 100%;
   }
 }
 </style>
