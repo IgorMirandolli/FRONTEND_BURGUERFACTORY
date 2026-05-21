@@ -502,6 +502,10 @@ const categorySelectOptions = computed(() =>
     }))
 )
 
+const totalProductsFromCategories = computed(() =>
+  categories.value.reduce((accumulator, category) => accumulator + Number(category.products_count || 0), 0)
+)
+
 const summaryCards = computed(() => [
   {
     key: 'total',
@@ -527,11 +531,13 @@ const summaryCards = computed(() => [
 ])
 
 const quickTabs = computed(() => {
+  const allProductsCount = Number(totalProductsFromCategories.value || productsSummary.value.total_products || 0)
+
   const tabs = [
     {
       label: 'Todos',
       value: 'all',
-      count: Number(productsSummary.value.total_products || 0),
+      count: allProductsCount,
     },
   ]
 
