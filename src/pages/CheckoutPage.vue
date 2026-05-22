@@ -308,6 +308,8 @@ function getCartContext() {
   const headers = {}
   if (isAuth) {
     headers.Authorization = `Bearer ${token}`
+  } else {
+    headers['X-Session-Id'] = sessionId
   }
 
   return { headers, isAuth, sessionId, user: session.user || null }
@@ -439,12 +441,8 @@ async function loadCart() {
   errorMessage.value = ''
 
   try {
-    const { headers, isAuth, sessionId, user } = getCartContext()
-    let url = `${API_BASE_URL}/api/cart`
-
-    if (!isAuth) {
-      url += `?session_id=${encodeURIComponent(sessionId)}`
-    }
+    const { headers, user } = getCartContext()
+    const url = `${API_BASE_URL}/api/cart`
 
     await hydrateLoggedUserProfile(headers, user)
 
@@ -492,11 +490,7 @@ async function submitOrder() {
     }
 
     const { headers, isAuth, sessionId } = getCartContext()
-    let url = `${API_BASE_URL}/api/cart/checkout`
-
-    if (!isAuth) {
-      url += `?session_id=${encodeURIComponent(sessionId)}`
-    }
+    const url = `${API_BASE_URL}/api/cart/checkout`
 
     const response = await fetch(url, {
       method: 'POST',

@@ -219,6 +219,8 @@ function getRequestContext() {
 
   if (isAuth) {
     headers.Authorization = `Bearer ${token}`
+  } else {
+    headers['X-Session-Id'] = sessionId
   }
 
   return { headers, isAuth, sessionId }
@@ -238,11 +240,8 @@ async function loadOrder() {
       return
     }
 
-    const { headers, isAuth, sessionId } = getRequestContext()
-    let url = `${API_BASE_URL}/api/orders/${orderId}`
-    if (!isAuth) {
-      url += `?session_id=${encodeURIComponent(sessionId)}`
-    }
+    const { headers } = getRequestContext()
+    const url = `${API_BASE_URL}/api/orders/${orderId}`
 
     const response = await fetch(url, { headers })
     const data = await response.json()

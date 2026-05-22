@@ -288,12 +288,12 @@ function getCartRequestContext() {
   const sessionId = getOrCreateGuestSessionId()
 
   const headers = {}
-  let url = `${API_BASE_URL}/api/cart`
+  const url = `${API_BASE_URL}/api/cart`
 
   if (isAuth) {
     headers.Authorization = `Bearer ${token}`
   } else {
-    url += `?session_id=${encodeURIComponent(sessionId)}`
+    headers['X-Session-Id'] = sessionId
   }
 
   return { headers, url, sessionId, isAuth }
@@ -333,12 +333,8 @@ async function removeCartItem(itemId) {
   cartError.value = ''
 
   try {
-    const { headers, sessionId, isAuth } = getCartRequestContext()
-    let url = `${API_BASE_URL}/api/cart/items/${itemId}`
-
-    if (!isAuth) {
-      url += `?session_id=${encodeURIComponent(sessionId)}`
-    }
+    const { headers } = getCartRequestContext()
+    const url = `${API_BASE_URL}/api/cart/items/${itemId}`
 
     const response = await fetch(url, {
       method: 'DELETE',
@@ -367,12 +363,8 @@ async function updateCartItemQuantity(item, nextQuantity) {
   cartError.value = ''
 
   try {
-    const { headers, sessionId, isAuth } = getCartRequestContext()
-    let url = `${API_BASE_URL}/api/cart/items/${item.id}`
-
-    if (!isAuth) {
-      url += `?session_id=${encodeURIComponent(sessionId)}`
-    }
+    const { headers } = getCartRequestContext()
+    const url = `${API_BASE_URL}/api/cart/items/${item.id}`
 
     const response = await fetch(url, {
       method: 'PATCH',
