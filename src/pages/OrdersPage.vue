@@ -136,7 +136,13 @@
           <div class="order-col order-main">
             <div class="order-id">Pedido #BF{{ order.id }}</div>
             <div class="order-date">{{ formatDate(order.created_at) }}</div>
-            <q-badge class="order-pill" color="green-2" text-color="green-10">Entregue</q-badge>
+            <q-badge
+              class="order-pill"
+              :color="pastStatusBadgeColor(order)"
+              :text-color="pastStatusBadgeTextColor(order)"
+            >
+              {{ pastStatusLabel(order) }}
+            </q-badge>
           </div>
 
           <div class="order-col">
@@ -164,7 +170,13 @@
               <div class="orders-mobile-id">Pedido #BF{{ order.id }}</div>
               <div class="orders-mobile-date">{{ formatDate(order.created_at) }}</div>
             </div>
-            <q-badge class="orders-mobile-badge" color="green-2" text-color="green-10">Entregue</q-badge>
+            <q-badge
+              class="orders-mobile-badge"
+              :color="pastStatusBadgeColor(order)"
+              :text-color="pastStatusBadgeTextColor(order)"
+            >
+              {{ pastStatusLabel(order) }}
+            </q-badge>
           </div>
 
           <div class="orders-mobile-body">
@@ -215,8 +227,8 @@ const errorMessage = ref('')
 const activeTab = ref('ongoing')
 const orders = ref([])
 
-const ongoingOrders = computed(() => orders.value.filter((order) => order.computed_status !== 'delivered'))
-const pastOrders = computed(() => orders.value.filter((order) => order.computed_status === 'delivered'))
+const ongoingOrders = computed(() => orders.value.filter((order) => !isPastOrder(order)))
+const pastOrders = computed(() => orders.value.filter((order) => isPastOrder(order)))
 
 function formatPrice(value) {
   return Number(value || 0).toFixed(2).replace('.', ',')
@@ -236,6 +248,39 @@ function normalizePaymentLabel(payment) {
   if (value.includes('card') || value.includes('cartao')) return 'Cartao'
   if (value.includes('cash') || value.includes('dinheiro')) return 'Dinheiro'
   return payment || '-'
+}
+
+function normalizeOrderStatus(status) {
+  return String(status || '')
+    .trim()
+    .toLowerCase()
+    .replace(/-/g, '_')
+    .replace(/\s+/g, '_')
+}
+
+function getOrderStatus(order) {
+  return normalizeOrderStatus(order?.computed_status || order?.status || '')
+}
+
+function isPastOrder(order) {
+  const status = getOrderStatus(order)
+  return status === 'delivered' || status === 'cancelled'
+}
+
+function pastStatusLabel(order) {
+  const status = getOrderStatus(order)
+  if (status === 'cancelled') return 'Cancelado'
+  return 'Entregue'
+}
+
+function pastStatusBadgeColor(order) {
+  const status = getOrderStatus(order)
+  return status === 'cancelled' ? 'red-2' : 'green-2'
+}
+
+function pastStatusBadgeTextColor(order) {
+  const status = getOrderStatus(order)
+  return status === 'cancelled' ? 'red-10' : 'green-10'
 }
 
 function resolveOrderImageUrl(rawUrl) {
