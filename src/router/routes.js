@@ -18,6 +18,11 @@ const routes = [
         meta: { requiresAdmin: true },
       },
       {
+        path: 'admin/relatorios',
+        component: () => import('pages/AdminReportsPage.vue'),
+        meta: { requiresAdmin: true },
+      },
+      {
         path: 'admin/pedidos',
         component: () => import('pages/AdminOrdersPage.vue'),
         meta: { requiresAdmin: true },

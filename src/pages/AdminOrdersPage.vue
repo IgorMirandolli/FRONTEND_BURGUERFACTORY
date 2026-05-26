@@ -5,6 +5,7 @@
         <nav class="bf-admin-nav">
           <button type="button" class="bf-admin-nav-btn is-active" @click="goOrdersAdmin">Pedidos</button>
           <button type="button" class="bf-admin-nav-btn" @click="goProductsAdmin">Produtos</button>
+          <button type="button" class="bf-admin-nav-btn" @click="goReportsAdmin">Relatorios</button>
         </nav>
 
         <h1>Pedidos</h1>
@@ -540,6 +541,10 @@ function goOrdersAdmin() {
 
 function goProductsAdmin() {
   router.push('/admin/produtos')
+}
+
+function goReportsAdmin() {
+  router.push('/admin/relatorios')
 }
 
 function normalizeStatus(value) {
@@ -1318,7 +1323,7 @@ onBeforeUnmount(() => {
   .bf-admin-nav {
     width: 100%;
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .bf-admin-nav-btn {
